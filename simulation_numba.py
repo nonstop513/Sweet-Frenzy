@@ -477,8 +477,8 @@ def fill_empty_method1_numba(board, fixed_mask, drop_table, position_idx):
                     symbol_id = 1
                 else:
                     symbol_id = symbol_value
-                
-                    board[row, col] = symbol_id
+
+                board[row, col] = symbol_id
 
 @jit(nopython=True, cache=True)
 def calculate_match_score_numba(linkpoint, board, positions_flat, num_positions):
