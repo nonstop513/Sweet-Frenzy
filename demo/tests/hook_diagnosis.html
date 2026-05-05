@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>?? Hook ËØäÊñ≠Â∑•ÂÖ∑</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Consolas', 'Monaco', monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #252526;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        
+        h1 {
+            color: #4fc3f7;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+        
+        h2 {
+            color: #81c784;
+            margin: 30px 0 15px 0;
+            font-size: 1.3em;
+            border-bottom: 2px solid #81c784;
+            padding-bottom: 5px;
+        }
+        
+        .test-section {
+            background: #2d2d30;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border-left: 4px solid #4fc3f7;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 10px 10px 0;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .log {
+            background: #1e1e1e;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            max-height: 500px;
+            overflow-y: auto;
+            font-size: 14px;
+        }
+        
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px solid #3c3c3c;
+        }
+        
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .success {
+            color: #81c784;
+        }
+        
+        .error {
+            color: #e57373;
+        }
+        
+        .warning {
+            color: #ffb74d;
+        }
+        
+        .info {
+            color: #4fc3f7;
+        }
+        
+        .result-box {
+            background: #2d2d30;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border-left: 4px solid #81c784;
+        }
+        
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #3c3c3c;
+        }
+        
+        .stat:last-child {
+            border-bottom: none;
+        }
+        
+        .stat-label {
+            color: #9cdcfe;
+        }
+        
+        .stat-value {
+            color: #ce9178;
+            font-weight: 700;
+        }
+        
+        code {
+            background: #1e1e1e;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #ce9178;
+        }
+        
+        .alert {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+        
+        .alert-info {
+            background: #1a237e20;
+            border-color: #4fc3f7;
+            color: #4fc3f7;
+        }
+        
+        .alert-warning {
+            background: #e6550020;
+            border-color: #ffb74d;
+            color: #ffb74d;
+        }
+        
+        .alert-error {
+            background: #b7171720;
+            border-color: #e57373;
+            color: #e57373;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>?? Hook ËØäÊñ≠Â∑•ÂÖ∑</h1>
+        
+        <div class="alert alert-info">
+            <strong>?? ?ÆÁ?Ôº?/strong>ËØäÊñ≠‰∏∫‰?‰π?BFS Ë∞ÉÁî®Ê¨°Êï∞‰∏?0ÔºåÊ???Hook ?ØÂê¶Ê≠?∏∏Â∑•‰?
+        </div>
+        
+        <h2>1Ô∏è‚É£ Ê£Ä?•Â??éÊñπÊ≥ïÊòØ?¶Â???/h2>
+        <div class="test-section">
+            <button onclick="checkMethods()">Ê£Ä?•ÊñπÊ≥?/button>
+            <div id="methodCheck" class="log"></div>
+        </div>
+        
+        <h2>2Ô∏è‚É£ ÊµãË? Hook ?ØÂê¶Â∑•‰?</h2>
+        <div class="test-section">
+            <button onclick="testHook()">ÊµãË? Hook</button>
+            <div id="hookTest" class="log"></div>
+        </div>
+        
+        <h2>3Ô∏è‚É£ ?üÊ??ï‰∏™ Spin Âπ∂Á???/h2>
+        <div class="test-section">
+            <button onclick="testSingleSpin()">?üÊ? Spin</button>
+            <div id="spinTest" class="log"></div>
+        </div>
+        
+        <h2>4Ô∏è‚É£ ÂÆåÊï¥ FreeGame ÊµãË?</h2>
+        <div class="test-section">
+            <button onclick="testFreeGame()">?üÊ? FreeGame</button>
+            <div id="freeGameTest" class="log"></div>
+        </div>
+        
+        <h2>?? ÁªüËÆ°ÁªìÊ?</h2>
+        <div id="statsResult"></div>
+    </div>
+    
+    <script src="../data.js"></script>
+    <script src="../engine.js"></script>
+    
+    <script>
+        function log(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = message;
+            container.appendChild(entry);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function clearLog(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+        
+        // 1. Ê£Ä?•ÊñπÊ≥ïÊòØ?¶Â???
+        function checkMethods() {
+            clearLog('methodCheck');
+            
+            log('methodCheck', '?? Ê£Ä??GameEngine ??gameData...', 'info');
+            
+            if (typeof GameEngine === 'undefined') {
+                log('methodCheck', '??GameEngine ?™Â?‰πâÔ?engine.js ?™Â?ËΩΩÔ?', 'error');
+                return;
+            }
+            log('methodCheck', '??GameEngine Â∑≤Â?‰π?, 'success');
+            
+            if (typeof gameData === 'undefined') {
+                log('methodCheck', '??gameData ?™Â?‰πâÔ?data.js ?™Â?ËΩΩÔ?', 'error');
+                return;
+            }
+            log('methodCheck', '??gameData Â∑≤Â?‰π?, 'success');
+            
+            try {
+                const engine = new GameEngine(gameData);
+                log('methodCheck', '??GameEngine ÂÆû‰??õÂª∫?êÂ?', 'success');
+                
+                // Ê£Ä?•ÊñπÊ≥?
+                const methods = [
+                    'findConnectedGroup',
+                    'findAllMatches',
+                    '_generateSingleSpin',
+                    'generateFreeGameScript',
+                    'shouldRedraw',
+                    'getMultipleRangeIndex'
+                ];
+                
+                log('methodCheck', '\n?? Ê£Ä?•ÊñπÊ≥ïÊòØ?¶Â??®Ô?', 'info');
+                methods.forEach(method => {
+                    if (typeof engine[method] === 'function') {
+                        log('methodCheck', `  ??${method} Â≠òÂú®`, 'success');
+                    } else {
+                        log('methodCheck', `  ??${method} ‰∏çÂ??®Ô?`, 'error');
+                    }
+                });
+                
+                // Ê£Ä?•ÊñπÊ≥ïÁ±ª??
+                log('methodCheck', '\n?î¨ ?πÊ?ËØ¶Ê?Ôº?, 'info');
+                log('methodCheck', `  findConnectedGroup: ${typeof engine.findConnectedGroup}`, 'info');
+                log('methodCheck', `  findAllMatches: ${typeof engine.findAllMatches}`, 'info');
+                
+            } catch (error) {
+                log('methodCheck', `???õÂª∫ÂºïÊ?Â§±Ë¥•Ôº?{error.message}`, 'error');
+            }
+        }
+        
+        // 2. ÊµãË? Hook ?ØÂê¶Â∑•‰?
+        function testHook() {
+            clearLog('hookTest');
+            
+            log('hookTest', '?îß ÊµãË? Hook ?∫Âà∂...', 'info');
+            
+            try {
+                const engine = new GameEngine(gameData);
+                let callCount = 0;
+                
+                // Hook findConnectedGroup
+                const originalFindConnectedGroup = engine.findConnectedGroup;
+                log('hookTest', `?üÂ??πÊ?Á±ªÂ?: ${typeof originalFindConnectedGroup}`, 'info');
+                
+                if (typeof originalFindConnectedGroup !== 'function') {
+                    log('hookTest', '??findConnectedGroup ‰∏çÊòØ?ΩÊï∞Ôº?, 'error');
+                    return;
+                }
+                
+                engine.findConnectedGroup = function(...args) {
+                    callCount++;
+                    log('hookTest', `  ?éØ Hook ?¶Êà™?∞Ë??®Ô?callCount = ${callCount}`, 'success');
+                    return originalFindConnectedGroup.apply(this, args);
+                };
+                
+                log('hookTest', '??Hook Â∑≤ËÆæÁΩ?, 'success');
+                log('hookTest', '\n?ß™ ÊµãË?Ë∞ÉÁî® findConnectedGroup...', 'info');
+                
+                // ?õÂª∫ÊµãË??òÈù¢
+                const testBoard = [
+                    [2, 2, 2, null],
+                    [2, 2, 2, 2, null],
+                    [2, 2, 2, 2, 2, null],
+                    [2, 2, 2, 0, 2, 2, 2],
+                    [2, 2, 2, 2, 2, null],
+                    [2, 2, 2, 2, null],
+                    [2, 2, 2, null]
+                ];
+                
+                const visited = Array(7).fill(null).map(() => Array(7).fill(false));
+                
+                // ?¥Êé•Ë∞ÉÁî®ÊµãË?
+                const group = engine.findConnectedGroup(testBoard, 0, 0, visited);
+                
+                log('hookTest', `\n?? ÊµãË?ÁªìÊ?Ôºö`, 'info');
+                log('hookTest', `  Hook Ë∞ÉÁî®Ê¨°Êï∞: ${callCount}`, callCount > 0 ? 'success' : 'error');
+                log('hookTest', `  ËøîÂ??ÑË?Á∫øÊï∞: ${group.length}`, 'info');
+                
+                if (callCount === 0) {
+                    log('hookTest', '\n??Hook Â§±Ë¥•ÔºÅÂèØ?ΩÂ??†Ô?', 'error');
+                    log('hookTest', '  1. ?πÊ?Ë¢´Á?Â≠òÊ?ÁªëÂ?', 'warning');
+                    log('hookTest', '  2. ‰ΩøÁî®‰∫Ü‰??åÁ?ÂºïÁî®', 'warning');
+                    log('hookTest', '  3. ‰ª??Ë∑ØÂ?‰∏çÂ?', 'warning');
+                } else {
+                    log('hookTest', '\n??Hook Â∑•‰?Ê≠?∏∏Ôº?, 'success');
+                }
+                
+            } catch (error) {
+                log('hookTest', `??ÊµãË?Â§±Ë¥•Ôº?{error.message}`, 'error');
+                console.error(error);
+            }
+        }
+        
+        // 3. ?üÊ??ï‰∏™ Spin Âπ∂Á???
+        function testSingleSpin() {
+            clearLog('spinTest');
+            
+            log('spinTest', '?é∞ ?üÊ??ï‰∏™ Spin...', 'info');
+            
+            try {
+                const engine = new GameEngine(gameData);
+                let bfsCount = 0;
+                let matchesCount = 0;
+                
+                // Hook ?πÊ?
+                const originalFindConnectedGroup = engine.findConnectedGroup;
+                engine.findConnectedGroup = function(...args) {
+                    bfsCount++;
+                    return originalFindConnectedGroup.apply(this, args);
+                };
+                
+                const originalFindAllMatches = engine.findAllMatches;
+                engine.findAllMatches = function(...args) {
+                    matchesCount++;
+                    log('spinTest', `  ?? findAllMatches Ë¢´Ë??®Ô?Á¨?${matchesCount} Ê¨°Ô?`, 'info');
+                    const result = originalFindAllMatches.apply(this, args);
+                    log('spinTest', `    ???æÂà∞ ${result.length} ‰∏™Ë?Á∫ø`, 'info');
+                    return result;
+                };
+                
+                log('spinTest', '??Hook Â∑≤ËÆæÁΩ?, 'success');
+                log('spinTest', '\n?±Ô? ÂºÄÂßãÁ???..', 'info');
+                
+                const startTime = performance.now();
+                const spin = engine._generateSingleSpin(false, 0, 1);
+                const duration = performance.now() - startTime;
+                
+                log('spinTest', '\n?? ÁªìÊ?ÁªüËÆ°Ôº?, 'info');
+                log('spinTest', `  ?±Ô? ?óÊó∂: ${duration.toFixed(2)} ms`, 'info');
+                log('spinTest', `  ?? BFS Ë∞ÉÁî®Ê¨°Êï∞: ${bfsCount}`, bfsCount > 0 ? 'success' : 'error');
+                log('spinTest', `  ?? findAllMatches Ë∞ÉÁî®: ${matchesCount}`, matchesCount > 0 ? 'success' : 'error');
+                log('spinTest', `  ?éØ ?ªÂ??? ${spin.totalScore}`, 'info');
+                log('spinTest', `  ?? ËøûÁ∫ø?? ${spin.allConnectedGroups.length}`, 'info');
+                
+                if (bfsCount === 0) {
+                    log('spinTest', '\n?†Ô? Ë≠¶Â?ÔºöBFS Ë∞ÉÁî®Ê¨°Êï∞‰∏?0Ôº?, 'warning');
+                    log('spinTest', '?ØËÉΩ?üÂ?Ôº?, 'warning');
+                    log('spinTest', '  1. ?òÈù¢Ê≤°Ê?Á¨¶Âè∑ÔºàÁ??êÂ§±Ë¥•Ô?', 'warning');
+                    log('spinTest', '  2. findAllMatches ?™Ë¢´Ë∞ÉÁî®', 'warning');
+                    log('spinTest', '  3. ‰ª???ªË?Ë∑≥Ë?‰∫ÜÊü•?æÊ≠•È™?, 'warning');
+                    
+                    // Ê£Ä?•Á???
+                    log('spinTest', '\n?? Ê£Ä?•Á??êÁ??òÈù¢Ôº?, 'info');
+                    if (spin.board) {
+                        let symbolCount = 0;
+                        spin.board.forEach((row, r) => {
+                            row.forEach((symbol, c) => {
+                                if (symbol !== null) symbolCount++;
+                            });
+                        });
+                        log('spinTest', `  ?òÈù¢?âÊ?Á¨¶Âè∑?? ${symbolCount}`, symbolCount > 0 ? 'success' : 'error');
+                    } else {
+                        log('spinTest', '  ???òÈù¢?™Á??êÔ?', 'error');
+                    }
+                }
+                
+                // ?¥Êñ∞ÁªüËÆ°
+                updateStats({ bfsCount, matchesCount, duration });
+                
+            } catch (error) {
+                log('spinTest', `???üÊ?Â§±Ë¥•Ôº?{error.message}`, 'error');
+                console.error(error);
+            }
+        }
+        
+        // 4. ÂÆåÊï¥ FreeGame ÊµãË?
+        function testFreeGame() {
+            clearLog('freeGameTest');
+            
+            log('freeGameTest', '?éÆ ?üÊ? FreeGame (10 Spin)...', 'info');
+            
+            try {
+                const engine = new GameEngine(gameData);
+                let bfsCount = 0;
+                let matchesCount = 0;
+                
+                // Hook ?πÊ?
+                const originalFindConnectedGroup = engine.findConnectedGroup;
+                engine.findConnectedGroup = function(...args) {
+                    bfsCount++;
+                    return originalFindConnectedGroup.apply(this, args);
+                };
+                
+                const originalFindAllMatches = engine.findAllMatches;
+                engine.findAllMatches = function(...args) {
+                    matchesCount++;
+                    return originalFindAllMatches.apply(this, args);
+                };
+                
+                log('freeGameTest', '??Hook Â∑≤ËÆæÁΩ?, 'success');
+                log('freeGameTest', '\n?±Ô? ÂºÄÂßãÁ???FreeGame...', 'info');
+                
+                const startTime = performance.now();
+                const script = engine.generateFreeGameScript(10, 0);
+                const duration = performance.now() - startTime;
+                
+                log('freeGameTest', '\n?? ÁªìÊ?ÁªüËÆ°Ôº?, 'info');
+                log('freeGameTest', `  ?±Ô? ?ªËÄóÊó∂: ${duration.toFixed(2)} ms`, 'info');
+                log('freeGameTest', `  ?? Âπ≥Â?ÊØ?Spin: ${(duration / script.spins.length).toFixed(2)} ms`, 'info');
+                log('freeGameTest', `  ?? BFS ?ªË??? ${bfsCount}`, bfsCount > 0 ? 'success' : 'error');
+                log('freeGameTest', `  ?? findAllMatches Ë∞ÉÁî®: ${matchesCount}`, matchesCount > 0 ? 'success' : 'error');
+                log('freeGameTest', `  ?? Âπ≥Â?ÊØ?Spin BFS: ${(bfsCount / script.spins.length).toFixed(1)}`, 'info');
+                log('freeGameTest', `  ?é∞ ??Spin ?? ${script.spins.length}`, 'info');
+                log('freeGameTest', `  ?éØ ?ªÂ??? ${script.totalScore.toLocaleString()}`, 'info');
+                
+                if (bfsCount === 0) {
+                    log('freeGameTest', '\n??‰∏•È??ÆÈ?Ôº?0‰∏?Spin ??BFS Ë∞ÉÁî®‰∏?0Ôº?, 'error');
+                    log('freeGameTest', 'ËøôÊ??≥Á?Ôº?, 'error');
+                    log('freeGameTest', '  1. ?Ä?âÁ??¢ÈÉΩÊ≤°Ê?ËøõË?ËøûÁ∫ø?•Êâæ', 'error');
+                    log('freeGameTest', '  2. ?ñËÄ?Hook ÂÆåÂÖ®Â§±Ê?', 'error');
+                    log('freeGameTest', '  3. ?ñËÄÖ‰Ωø?®‰?‰∏çÂ??ÑÁ??êË∑ØÂæ?, 'error');
+                } else if (duration < 10) {
+                    log('freeGameTest', '\n?†Ô? Ë≠¶Â?ÔºöÁ??êÊó∂?¥Â?Â∏∏Áü≠Ôº? 10msÔº?, 'warning');
+                    log('freeGameTest', `‰Ω?BFS Ë∞ÉÁî®‰∫?${bfsCount} Ê¨°Ô?Â∫îËØ•?ÄË¶ÅÊõ¥Â§öÊó∂?¥`, 'warning');
+                    log('freeGameTest', '?ØËÉΩ?üÂ?ÔºöV8 ‰ºòÂ??ÅÁ?Â≠ò„ÄÅÊ?ÊµãË??∞ÊçÆÁÆÄ??, 'warning');
+                } else {
+                    log('freeGameTest', '\n??ÊµãË?Ê≠?∏∏ÂÆåÊ?', 'success');
+                }
+                
+                // ?¥Êñ∞ÁªüËÆ°
+                updateStats({ bfsCount, matchesCount, duration, spins: script.spins.length });
+                
+            } catch (error) {
+                log('freeGameTest', `???üÊ?Â§±Ë¥•Ôº?{error.message}`, 'error');
+                console.error(error);
+            }
+        }
+        
+        // ?¥Êñ∞ÁªüËÆ°?æÁ§∫
+        function updateStats(stats) {
+            const html = `
+                <div class="result-box">
+                    <h3 style="color: #81c784; margin-bottom: 15px;">?Ä?é‰?Ê¨°Ê?ËØïÁ?ËÆ?/h3>
+                    <div class="stat">
+                        <span class="stat-label">?±Ô? ?óÊó∂</span>
+                        <span class="stat-value">${stats.duration?.toFixed(2) || '0.00'} ms</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">?? BFS Ë∞ÉÁî®Ê¨°Êï∞</span>
+                        <span class="stat-value">${stats.bfsCount || 0}</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">?? findAllMatches Ë∞ÉÁî®</span>
+                        <span class="stat-value">${stats.matchesCount || 0}</span>
+                    </div>
+                    ${stats.spins ? `
+                    <div class="stat">
+                        <span class="stat-label">?é∞ Spin ??/span>
+                        <span class="stat-value">${stats.spins}</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">?? Âπ≥Â?ÊØ?Spin BFS</span>
+                        <span class="stat-value">${(stats.bfsCount / stats.spins).toFixed(1)}</span>
+                    </div>
+                    ` : ''}
+                    ${stats.bfsCount === 0 ? `
+                    <div class="alert alert-error" style="margin-top: 15px;">
+                        <strong>??ËØäÊñ≠ÁªìÊ?ÔºöBFS Ë∞ÉÁî®‰∏?0</strong><br>
+                        ËØ∑‰?Ê¨°ÊâßË°å‰??¢Á?ÊµãË?Ê≠•È™§ÔºåÊâæ?∫Ê†π?¨Â??†Ô?
+                    </div>
+                    ` : `
+                    <div class="alert alert-info" style="margin-top: 15px;">
+                        <strong>??Hook Â∑•‰?Ê≠?∏∏</strong><br>
+                        BFS Ë∞ÉÁî®Ê¨°Êï∞Ê≠?∏∏ÔºåÂèØ‰ª•Ë?Ë°åÊÄßËÉΩ?ÜÊ???
+                    </div>
+                    `}
+                </div>
+            `;
+            document.getElementById('statsResult').innerHTML = html;
+        }
+        
+        // ?ùÂ???
+        console.log('?? Hook ËØäÊñ≠Â∑•ÂÖ∑Â∑≤Â?ËΩ?);
+    </script>
+</body>
+</html>

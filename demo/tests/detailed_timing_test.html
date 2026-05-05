@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>?±Ô? ËØ¶Á?ËÆ°Êó∂?ÜÊ?</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Consolas', 'Monaco', monospace;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .result-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        tr:hover {
+            background: #f0f0f0;
+        }
+        
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        
+        .summary-card h3 {
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        
+        .summary-card .value {
+            font-size: 2.2em;
+            font-weight: 700;
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid;
+        }
+        
+        .alert-info {
+            background: #e3f2fd;
+            color: #1976d2;
+            border-color: #2196F3;
+        }
+        
+        .alert-warning {
+            background: #fff3e0;
+            color: #f57c00;
+            border-color: #ff9800;
+        }
+        
+        .alert-success {
+            background: #e8f5e9;
+            color: #388e3c;
+            border-color: #4caf50;
+        }
+        
+        .log {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 13px;
+            line-height: 1.6;
+            margin: 15px 0;
+        }
+        
+        .log-entry {
+            padding: 3px 0;
+        }
+        
+        .fast {
+            color: #4caf50;
+            font-weight: 700;
+        }
+        
+        .slow {
+            color: #f44336;
+            font-weight: 700;
+        }
+        
+        .normal {
+            color: #2196F3;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>?±Ô? ËØ¶Á?ËÆ°Êó∂?ÜÊ?Â∑•ÂÖ∑</h1>
+            <p>Á≤æÁ°ÆÊµãÈ?ÊØè‰∏™ Spin ?ÑÁ??êÊó∂?¥Â??ßËÉΩ?áÊ?</p>
+        </div>
+        
+        <div class="content">
+            <div class="alert alert-info">
+                <strong>?? ?ÆÁ?Ôº?/strong>È™åË? 6.10ms ?ØÁ?ÂÆûÊÄßËÉΩÔºåË??ØÊ??èÊ?ËØØ„Ä?
+                <br>?¨Â∑•?∑Â??ê‰∏™ÊµãÈ?ÊØè‰∏™ Spin ?ÑÁ??êÊó∂?¥Ô?Âπ∂Â??êÊó∂?¥Â?Â∏É„Ä?
+            </div>
+            
+            <div>
+                <button onclick="testDetailedTiming()">?î¨ ËØ¶Á?ËÆ°Êó∂ÊµãË?</button>
+                <button onclick="testMultipleRuns()">?? ?çÂ?ÊµãË? 10 Ê¨?/button>
+                <button onclick="testWithLogging()">?? Â∏¶Êó•ÂøóÊ?ËØ?/button>
+                <button onclick="clearResults()">??Ô∏?Ê∏ÖÈô§ÁªìÊ?</button>
+            </div>
+            
+            <div id="results"></div>
+            <div id="logs" class="log" style="display: none;"></div>
+        </div>
+    </div>
+    
+    <script src="../data.js"></script>
+    <script src="../engine.js"></script>
+    
+    <script>
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('logs').innerHTML = '';
+            document.getElementById('logs').style.display = 'none';
+        }
+        
+        function addLog(message) {
+            const logs = document.getElementById('logs');
+            logs.style.display = 'block';
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = `[${new Date().toLocaleTimeString('zh-TW', {hour12: false, fractionalSecondDigits: 3})}] ${message}`;
+            logs.appendChild(entry);
+            logs.scrollTop = logs.scrollHeight;
+        }
+        
+        // ËØ¶Á?ËÆ°Êó∂ÊµãË?
+        function testDetailedTiming() {
+            clearResults();
+            addLog('?? ÂºÄÂßãËØ¶ÁªÜËÆ°?∂Ê?ËØ?..');
+            
+            const engine = new GameEngine(gameData);
+            const spinTimings = [];
+            let totalBFS = 0;
+            let totalMatches = 0;
+            
+            // Hook ÁªüËÆ°
+            const originalFindConnectedGroup = engine.findConnectedGroup;
+            engine.findConnectedGroup = function(...args) {
+                totalBFS++;
+                return originalFindConnectedGroup.apply(this, args);
+            };
+            
+            const originalFindAllMatches = engine.findAllMatches;
+            engine.findAllMatches = function(...args) {
+                totalMatches++;
+                return originalFindAllMatches.apply(this, args);
+            };
+            
+            // ÊµãÈ??ª‰??∂Èó¥
+            const overallStart = performance.now();
+            
+            // ?ê‰∏™?üÊ? Spin Âπ∂ËÆ°??
+            for (let i = 0; i < 10; i++) {
+                const spinStart = performance.now();
+                const bfsBeforeSpin = totalBFS;
+                const matchesBeforeSpin = totalMatches;
+                
+                const spin = engine._generateSingleSpin(true, i, 1);
+                
+                const spinDuration = performance.now() - spinStart;
+                const bfsThisSpin = totalBFS - bfsBeforeSpin;
+                const matchesThisSpin = totalMatches - matchesBeforeSpin;
+                
+                spinTimings.push({
+                    index: i + 1,
+                    duration: spinDuration,
+                    bfs: bfsThisSpin,
+                    matches: matchesThisSpin,
+                    score: spin.totalScore,
+                    groups: spin.allConnectedGroups.length,
+                    cascades: spin.cascadeResults.length
+                });
+                
+                addLog(`Spin ${i+1}: ${spinDuration.toFixed(3)}ms, BFS ${bfsThisSpin}, ËøûÁ∫ø ${spin.allConnectedGroups.length}, ?ÜÊï∞ ${spin.totalScore}`);
+            }
+            
+            const overallDuration = performance.now() - overallStart;
+            
+            addLog(`??ÊµãË?ÂÆåÊ?ÔºÅÊÄªËÄóÊó∂: ${overallDuration.toFixed(3)}ms`);
+            
+            // ?ÜÊ?ÁªìÊ?
+            const avgDuration = spinTimings.reduce((sum, s) => sum + s.duration, 0) / spinTimings.length;
+            const maxDuration = Math.max(...spinTimings.map(s => s.duration));
+            const minDuration = Math.min(...spinTimings.map(s => s.duration));
+            const avgBFS = spinTimings.reduce((sum, s) => sum + s.bfs, 0) / spinTimings.length;
+            
+            // ?üÊ??•Â?
+            let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Spin</th>
+                            <th>?óÊó∂ (ms)</th>
+                            <th>BFSË∞ÉÁî®</th>
+                            <th>findAllMatches</th>
+                            <th>ËøûÁ∫ø??/th>
+                            <th>Cascades</th>
+                            <th>?ÜÊï∞</th>
+                            <th>?üÂ∫¶</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            spinTimings.forEach(s => {
+                let speedClass = 'normal';
+                let speedText = 'Ê≠?∏∏';
+                if (s.duration < 1) {
+                    speedClass = 'fast';
+                    speedText = '?°Ê?Âø?;
+                } else if (s.duration < 5) {
+                    speedClass = 'fast';
+                    speedText = 'Âø?;
+                } else if (s.duration > 100) {
+                    speedClass = 'slow';
+                    speedText = '??;
+                }
+                
+                tableHTML += `
+                    <tr>
+                        <td>Spin ${s.index}</td>
+                        <td><strong>${s.duration.toFixed(3)}</strong></td>
+                        <td>${s.bfs}</td>
+                        <td>${s.matches}</td>
+                        <td>${s.groups}</td>
+                        <td>${s.cascades}</td>
+                        <td>${s.score.toLocaleString()}</td>
+                        <td class="${speedClass}">${speedText}</td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += '</tbody></table>';
+            
+            // ?æÁ§∫ÁªìÊ?
+            const html = `
+                <div class="result-section">
+                    <h2 style="color: #667eea; margin-bottom: 20px;">?? ËØ¶Á?ËÆ°Êó∂ÁªìÊ?</h2>
+                    
+                    <div class="summary">
+                        <div class="summary-card">
+                            <h3>?ªËÄóÊó∂</h3>
+                            <div class="value">${overallDuration.toFixed(2)} ms</div>
+                        </div>
+                        <div class="summary-card">
+                            <h3>Âπ≥Â?ÊØ?Spin</h3>
+                            <div class="value">${avgDuration.toFixed(2)} ms</div>
+                        </div>
+                        <div class="summary-card">
+                            <h3>?ÄÂø?/h3>
+                            <div class="value">${minDuration.toFixed(2)} ms</div>
+                        </div>
+                        <div class="summary-card">
+                            <h3>?Ä??/h3>
+                            <div class="value">${maxDuration.toFixed(2)} ms</div>
+                        </div>
+                        <div class="summary-card">
+                            <h3>??BFS</h3>
+                            <div class="value">${totalBFS}</div>
+                        </div>
+                        <div class="summary-card">
+                            <h3>Âπ≥Â? BFS/Spin</h3>
+                            <div class="value">${avgBFS.toFixed(1)}</div>
+                        </div>
+                    </div>
+                    
+                    ${overallDuration < 10 ? `
+                        <div class="alert alert-warning">
+                            <strong>?†Ô? ?ßËÉΩÂºÇÂ∏∏Âø´Ô?</strong><br>
+                            ?ªËÄóÊó∂ ${overallDuration.toFixed(2)}ms ÂØπ‰? ${totalBFS} Ê¨?BFS Ë∞ÉÁî®?•ËØ¥?ûÂ∏∏Âø´„Ä?br>
+                            ?ØËÉΩ?üÂ?Ôº?br>
+                            1. V8 ÂºïÊ???JIT ‰ºòÂ??ûÂ∏∏ÊøÄËø?br>
+                            2. ?∞ÊçÆ?ÜË?Â∞èÔ?ËÆ°Á??èÂ?<br>
+                            3. ÊµèË??®Á?Â≠?br>
+                            4. ?ê‰??ªË?Ë¢´‰??ñÊ?<br>
+                            <strong>Âπ≥Â?ÊØèÊ¨° BFSÔº?{(overallDuration / totalBFS * 1000).toFixed(1)} ÂæÆÁ?</strong>
+                        </div>
+                    ` : `
+                        <div class="alert alert-success">
+                            <strong>???ßËÉΩÊ≠?∏∏</strong><br>
+                            ?ªËÄóÊó∂ ${overallDuration.toFixed(2)}msÔºåÁ¨¶?àÈ??ü„Ä?
+                        </div>
+                    `}
+                    
+                    <h3 style="color: #667eea; margin: 20px 0 10px 0;">ÊØè‰∏™ Spin ËØ¶Ê?</h3>
+                    ${tableHTML}
+                </div>
+            `;
+            
+            document.getElementById('results').innerHTML = html;
+        }
+        
+        // ?çÂ?ÊµãË?
+        function testMultipleRuns() {
+            clearResults();
+            addLog('?? ÂºÄÂßãÈ?Â§çÊ?ËØ?10 Ê¨?..');
+            
+            const runs = [];
+            
+            for (let run = 0; run < 10; run++) {
+                const engine = new GameEngine(gameData);
+                let bfsCount = 0;
+                
+                // Hook
+                const originalFindConnectedGroup = engine.findConnectedGroup;
+                engine.findConnectedGroup = function(...args) {
+                    bfsCount++;
+                    return originalFindConnectedGroup.apply(this, args);
+                };
+                
+                const start = performance.now();
+                const script = engine.generateFreeGameScript(10, 0);
+                const duration = performance.now() - start;
+                
+                runs.push({
+                    run: run + 1,
+                    duration,
+                    bfs: bfsCount,
+                    score: script.totalScore,
+                    spins: script.spins.length
+                });
+                
+                addLog(`Run ${run+1}: ${duration.toFixed(3)}ms, BFS ${bfsCount}, ?ÜÊï∞ ${script.totalScore}`);
+            }
+            
+            const avgDuration = runs.reduce((sum, r) => sum + r.duration, 0) / runs.length;
+            const minDuration = Math.min(...runs.map(r => r.duration));
+            const maxDuration = Math.max(...runs.map(r => r.duration));
+            const stdDev = Math.sqrt(runs.reduce((sum, r) => sum + Math.pow(r.duration - avgDuration, 2), 0) / runs.length);
+            const avgBFS = runs.reduce((sum, r) => sum + r.bfs, 0) / runs.length;
+            
+            addLog(`??ÊµãË?ÂÆåÊ?ÔºÅÂπ≥?? ${avgDuration.toFixed(3)}ms, ?áÂ?Â∑? ${stdDev.toFixed(3)}ms`);
+            
+            let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Run</th>
+                            <th>?óÊó∂ (ms)</th>
+                            <th>BFS Ë∞ÉÁî®</th>
+                            <th>?ªÂ???/th>
+                            <th>Spin ??/th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            runs.forEach(r => {
+                tableHTML += `
+                    <tr>
+                        <td>Run ${r.run}</td>
+                        <td><strong>${r.duration.toFixed(3)}</strong></td>
+                        <td>${r.bfs}</td>
+                        <td>${r.score.toLocaleString()}</td>
+                        <td>${r.spins}</td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += '</tbody></table>';
+            
+            const html = `
+                <div class="result-section">
+                    <h2 style="color: #667eea; margin-bottom: 20px;">?? ?çÂ?ÊµãË?ÁªìÊ? (10Ê¨?</h2>
+                    
+                    <div class="summary">
+                        <div class="summary-card">
+                            <h3>Âπ≥Â??óÊó∂</h3>
+                            <div class="value">${avgDuration.toFixed(2)} ms</div>
+                        </div>
+                        <div class="summary-card">
+                            <h3>?áÂ?Â∑?/h3>
+                            <div class="value">${stdDev.toFixed(2)} ms</div>
+                        </div>
+                        <div class="summary-card">
+                            <h3>?ÄÂø?/h3>
+                            <div class="value">${minDuration.toFixed(2)} ms</div>
+                        </div>
+                        <div class="summary-card">
+                            <h3>?Ä??/h3>
+                            <div class="value">${maxDuration.toFixed(2)} ms</div>
+                        </div>
+                        <div class="summary-card">
+                            <h3>Âπ≥Â? BFS</h3>
+                            <div class="value">${avgBFS.toFixed(0)}</div>
+                        </div>
+                        <div class="summary-card">
+                            <h3>Á®≥Â???/h3>
+                            <div class="value">¬±${(stdDev/avgDuration*100).toFixed(1)}%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <strong>?? Á®≥Â??ßÂ??êÔ?</strong><br>
+                        Ê≥¢Âä®?ÉÂõ¥Ôº?{minDuration.toFixed(2)}ms ~ ${maxDuration.toFixed(2)}ms<br>
+                        ?∏ÂØπ?áÂ?Â∑ÆÔ?${(stdDev/avgDuration*100).toFixed(2)}%<br>
+                        ${stdDev/avgDuration < 0.1 ? '???ßËÉΩ?ûÂ∏∏Á®≥Â?' : stdDev/avgDuration < 0.2 ? '???ßËÉΩÁ®≥Â?' : '?†Ô? ?ßËÉΩÊ≥¢Âä®ËæÉÂ§ß'}
+                    </div>
+                    
+                    <h3 style="color: #667eea; margin: 20px 0 10px 0;">ÊØèÊ¨°ÊµãË?ËØ¶Ê?</h3>
+                    ${tableHTML}
+                    
+                    ${avgDuration < 10 ? `
+                        <div class="alert alert-warning">
+                            <strong>?? Ê∑±ÂÖ•?ÜÊ?Ôº?/strong><br>
+                            Âπ≥Â??óÊó∂ ${avgDuration.toFixed(2)}ms ÂØπ‰? 10 ‰∏?SpinÔºàÁ∫¶ ${avgBFS.toFixed(0)} Ê¨?BFSÔºâÈ?Â∏∏Âø´??br>
+                            <br>
+                            <strong>ÊØèÊ¨° BFS Âπ≥Â??óÊó∂Ôº?{(avgDuration / avgBFS * 1000).toFixed(1)} ÂæÆÁ?</strong><br>
+                            <br>
+                            ËøôÊ??≥Á?Ôº?br>
+                            - Â¶ÇÊ??ØÁ?ÂÆûÊÄßËÉΩÔºöV8 ÂºïÊ?‰ºòÂ?ÂæóÈ?Â∏∏Â•ΩÔºÅ‚?<br>
+                            - Â¶ÇÊ??∞ÊçÆ?ÜÂ?ÔºöÂèØ?ΩÈ?Ë¶ÅÊ?ËØïÊõ¥Â§ßÁ??∞ÊçÆ???†Ô?<br>
+                            - Â¶ÇÊ??âÁ?Â≠òÔ??ØËÉΩ?ÄË¶ÅÊ?ËØï‰??åÁ??èÊú∫seed ?†Ô?
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            document.getElementById('results').innerHTML = html;
+        }
+        
+        // Â∏¶Êó•ÂøóÊ?ËØ?
+        function testWithLogging() {
+            clearResults();
+            addLog('?? ÂºÄÂßãÂ∏¶ËØ¶Á??•Â??ÑÊ?ËØ?..');
+            
+            const engine = new GameEngine(gameData);
+            let bfsCount = 0;
+            let matchesCount = 0;
+            const bfsTimings = [];
+            
+            // Hook BFS Âπ∂ËÆ∞ÂΩïÊ?Ê¨°ËÄóÊó∂
+            const originalFindConnectedGroup = engine.findConnectedGroup;
+            engine.findConnectedGroup = function(...args) {
+                bfsCount++;
+                const start = performance.now();
+                const result = originalFindConnectedGroup.apply(this, args);
+                const duration = performance.now() - start;
+                bfsTimings.push(duration);
+                
+                if (bfsCount <= 20 || bfsCount % 100 === 0) {
+                    addLog(`  BFS ${bfsCount}: ${duration.toFixed(4)}ms, ËøîÂ? ${result.length} ‰∏™cell`);
+                }
+                
+                return result;
+            };
+            
+            const originalFindAllMatches = engine.findAllMatches;
+            engine.findAllMatches = function(...args) {
+                matchesCount++;
+                addLog(`?? findAllMatches Ë∞ÉÁî® #${matchesCount}`);
+                return originalFindAllMatches.apply(this, args);
+            };
+            
+            addLog('\n?±Ô? ÂºÄÂßãÁ???FreeGame...\n');
+            
+            const start = performance.now();
+            const script = engine.generateFreeGameScript(10, 0);
+            const duration = performance.now() - start;
+            
+            addLog(`\n???üÊ?ÂÆåÊ?ÔºÅÊÄªËÄóÊó∂: ${duration.toFixed(3)}ms`);
+            
+            // ?ÜÊ? BFS ?óÊó∂
+            const avgBFSDuration = bfsTimings.reduce((sum, t) => sum + t, 0) / bfsTimings.length;
+            const maxBFSDuration = Math.max(...bfsTimings);
+            const minBFSDuration = Math.min(...bfsTimings);
+            
+            const html = `
+                <div class="result-section">
+                    <h2 style="color: #667eea; margin-bottom: 20px;">?? ËØ¶Á??•Â?ÊµãË?ÁªìÊ?</h2>
+                    
+                    <div class="summary">
+                        <div class="summary-card">
+                            <h3>?ªËÄóÊó∂</h3>
+                            <div class="value">${duration.toFixed(2)} ms</div>
+                        </div>
+                        <div class="summary-card">
+                            <h3>BFS ?ªÊ¨°??/h3>
+                            <div class="value">${bfsCount}</div>
+                        </div>
+                        <div class="summary-card">
+                            <h3>Âπ≥Â?ÊØèÊ¨° BFS</h3>
+                            <div class="value">${(avgBFSDuration * 1000).toFixed(1)} Œºs</div>
+                        </div>
+                        <div class="summary-card">
+                            <h3>BFS ?Ä??/h3>
+                            <div class="value">${(maxBFSDuration * 1000).toFixed(1)} Œºs</div>
+                        </div>
+                        <div class="summary-card">
+                            <h3>findAllMatches</h3>
+                            <div class="value">${matchesCount}</div>
+                        </div>
+                        <div class="summary-card">
+                            <h3>?ªÂ???/h3>
+                            <div class="value">${script.totalScore.toLocaleString()}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <strong>?? ?ßËÉΩ?ÜÊ?Ôº?/strong><br>
+                        ?ïÊ¨° BFS Âπ≥Â??óÊó∂Ôº?{(avgBFSDuration * 1000).toFixed(2)} ÂæÆÁ?<br>
+                        BFS ?óÊó∂?ÉÂõ¥Ôº?{(minBFSDuration * 1000).toFixed(2)} ~ ${(maxBFSDuration * 1000).toFixed(2)} ÂæÆÁ?<br>
+                        BFS ?ªËÄóÊó∂?†Ê?Ôº?{(avgBFSDuration * bfsCount / duration * 100).toFixed(1)}%<br>
+                        ?∂‰??ªË??óÊó∂Ôº?{(duration - avgBFSDuration * bfsCount).toFixed(2)} ms (${((1 - avgBFSDuration * bfsCount / duration) * 100).toFixed(1)}%)
+                    </div>
+                    
+                    ${avgBFSDuration < 0.01 ? `
+                        <div class="alert alert-success">
+                            <strong>???ßËÉΩ‰ºòÂ?Ôº?/strong><br>
+                            ?ïÊ¨° BFS Âπ≥Â? ${(avgBFSDuration * 1000).toFixed(2)} ÂæÆÁ?ÔºåËØ¥?éÔ?<br>
+                            - ??V8 JIT ‰ºòÂ??üÊ?<br>
+                            - ???∞Á?Â§çÁî®?∫Âà∂Â∑•‰??ØÂ•Ω<br>
+                            - ??BFS ÁÆóÊ?È´òÊ?<br>
+                            <br>
+                            Â¶ÇÊ?ËøôÊòØ?üÂ??ßËÉΩÔºåÈÇ£‰πà‰??ÑÂ??éÂ∑≤ÁªèÈ?Â∏∏‰??ñ‰?ÔºÅ??
+                        </div>
+                    ` : ''}
+                    
+                    <p style="margin-top: 15px; color: #666;">
+                        ?•Á?‰∏ãÊñπ?•Â?‰∫ÜËß£ËØ¶Á??ÑÊâßË°åÊ?Á®ãÔ??æÁ§∫??0Ê¨°BFS?åÊ?100Ê¨°È?Á®ãÁ?Ôº?
+                    </p>
+                </div>
+            `;
+            
+            document.getElementById('results').innerHTML = html;
+        }
+        
+        // ?ùÂ???
+        console.log('?±Ô? ËØ¶Á?ËÆ°Êó∂ÊµãË?Â∑•ÂÖ∑Â∑≤Â?ËΩ?);
+    </script>
+</body>
+</html>

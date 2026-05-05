@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎨 图片预加载优化版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            color: #333;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 10px 10px 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .test-area {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(5, 80px);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .cell {
+            width: 80px;
+            height: 80px;
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .cell img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .metric:last-child {
+            border-bottom: none;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid;
+        }
+        
+        .alert-info {
+            background: #e3f2fd;
+            color: #1976d2;
+            border-color: #2196F3;
+        }
+        
+        .alert-success {
+            background: #e8f5e9;
+            color: #388e3c;
+            border-color: #4caf50;
+        }
+        
+        .alert-warning {
+            background: #fff3e0;
+            color: #f57c00;
+            border-color: #ff9800;
+        }
+        
+        code {
+            background: #1e1e1e;
+            color: #ce9178;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', monospace;
+        }
+        
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 图片预加载性能测试</h1>
+        <p class="subtitle">对比传统加载 vs 预加载的性能差异</p>
+        
+        <div class="alert alert-info">
+            <strong>📌 测试目标：</strong>验证图片预加载是否能显著提升渲染性能
+        </div>
+        
+        <div class="test-area">
+            <h3>测试 1：传统加载（每次创建新 img）</h3>
+            <button onclick="testTraditionalLoading()">🐢 传统加载测试</button>
+            <div id="traditional-result"></div>
+        </div>
+        
+        <div class="test-area">
+            <h3>测试 2：预加载优化（复用预加载的图片）</h3>
+            <button onclick="testPreloadedLoading()">⚡ 预加载测试</button>
+            <div id="preloaded-result"></div>
+        </div>
+        
+        <div class="test-area">
+            <h3>测试 3：CSS 背景图优化</h3>
+            <button onclick="testCSSBackground()">🎨 CSS 背景测试</button>
+            <div id="css-result"></div>
+        </div>
+        
+        <div id="comparison"></div>
+        
+        <h2 style="color: #667eea; margin-top: 40px;">💡 优化建议</h2>
+        
+        <div class="alert alert-success">
+            <strong>✅ 推荐方案：图片预加载 + 对象池</strong>
+            <pre style="margin-top: 10px;">// 1. 页面加载时预加载所有图片
+const imageCache = {};
+function preloadImages() {
+    const symbols = ['WW', 'C1', 'M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7'];
+    symbols.forEach(symbol => {
+        const img = new Image();
+        img.src = \`img/\${symbol}.png\`;
+        imageCache[symbol] = img;
+    });
+}
+
+// 2. 更新格子时复用预加载的图片
+function updateCellDisplay(cell) {
+    const symbolName = getSymbolName(cell.symbol);
+    const cachedImg = imageCache[symbolName];
+    
+    // 复用已加载的图片（克隆或直接使用）
+    const img = cachedImg.cloneNode(false);
+    cell.element.innerHTML = '';
+    cell.element.appendChild(img);
+}</pre>
+        </div>
+        
+        <div class="alert alert-info">
+            <strong>📊 预期提升：</strong>
+            <ul style="margin-top: 10px; padding-left: 20px;">
+                <li>首次渲染：慢（需要加载图片）</li>
+                <li>后续渲染：<strong>快 10-50 倍</strong>（从缓存读取）</li>
+                <li>内存占用：增加少量（预加载 9 张图片）</li>
+                <li>用户体验：<strong>显著提升</strong> ⚡</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // 符号映射
+        const symbolMap = {
+            0: { name: 'WILD', img: 'img/WW.png' },
+            1: { name: 'C1', img: 'img/C1.png' },
+            2: { name: 'M1', img: 'img/M1.png' },
+            3: { name: 'M2', img: 'img/M2.png' },
+            4: { name: 'M3', img: 'img/M3.png' },
+            5: { name: 'M4', img: 'img/M4.png' },
+            6: { name: 'M5', img: 'img/M5.png' },
+            7: { name: 'M6', img: 'img/M6.png' },
+            8: { name: 'M7', img: 'img/M7.png' }
+        };
+        
+        // 图片缓存
+        const imageCache = {};
+        let isPreloaded = false;
+        
+        // 预加载所有图片
+        function preloadImages() {
+            return new Promise((resolve) => {
+                const images = Object.values(symbolMap);
+                let loaded = 0;
+                
+                images.forEach(symbol => {
+                    const img = new Image();
+                    img.onload = () => {
+                        loaded++;
+                        if (loaded === images.length) {
+                            resolve();
+                        }
+                    };
+                    img.src = symbol.img;
+                    imageCache[symbol.name] = img;
+                });
+            });
+        }
+        
+        // 测试 1: 传统加载
+        async function testTraditionalLoading() {
+            const resultDiv = document.getElementById('traditional-result');
+            resultDiv.innerHTML = '<p style="color: #666;">⏳ 测试中...</p>';
+            
+            // 创建测试网格
+            const grid = document.createElement('div');
+            grid.className = 'grid';
+            
+            const iterations = 100; // 重复渲染次数
+            const cells = 40; // 格子数量
+            
+            const start = performance.now();
+            
+            for (let iter = 0; iter < iterations; iter++) {
+                grid.innerHTML = ''; // 清空
+                
+                for (let i = 0; i < cells; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    
+                    // ❌ 传统方式：每次创建新 img 并设置 src
+                    const symbol = Object.values(symbolMap)[i % 9];
+                    const img = document.createElement('img');
+                    img.src = symbol.img; // 浏览器可能需要重新请求
+                    img.alt = symbol.name;
+                    
+                    cell.appendChild(img);
+                    grid.appendChild(cell);
+                }
+            }
+            
+            const duration = performance.now() - start;
+            
+            resultDiv.innerHTML = `
+                <div class="result">
+                    <div class="metric">
+                        <span><strong>⏱️ 总耗时</strong></span>
+                        <span><strong>${duration.toFixed(2)} ms</strong></span>
+                    </div>
+                    <div class="metric">
+                        <span>渲染次数</span>
+                        <span>${iterations} 次</span>
+                    </div>
+                    <div class="metric">
+                        <span>每次格子数</span>
+                        <span>${cells} 个</span>
+                    </div>
+                    <div class="metric">
+                        <span>平均每次</span>
+                        <span>${(duration / iterations).toFixed(2)} ms</span>
+                    </div>
+                    <div class="metric">
+                        <span>总操作数</span>
+                        <span>${iterations * cells} 次</span>
+                    </div>
+                </div>
+            `;
+            
+            updateComparison();
+        }
+        
+        // 测试 2: 预加载优化
+        async function testPreloadedLoading() {
+            const resultDiv = document.getElementById('preloaded-result');
+            resultDiv.innerHTML = '<p style="color: #666;">⏳ 预加载图片中...</p>';
+            
+            // 先预加载
+            if (!isPreloaded) {
+                await preloadImages();
+                isPreloaded = true;
+            }
+            
+            resultDiv.innerHTML = '<p style="color: #666;">⏳ 测试中...</p>';
+            
+            const grid = document.createElement('div');
+            grid.className = 'grid';
+            
+            const iterations = 100;
+            const cells = 40;
+            
+            const start = performance.now();
+            
+            for (let iter = 0; iter < iterations; iter++) {
+                grid.innerHTML = '';
+                
+                for (let i = 0; i < cells; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    
+                    // ✅ 优化方式：复用预加载的图片
+                    const symbol = Object.values(symbolMap)[i % 9];
+                    const cachedImg = imageCache[symbol.name];
+                    const img = cachedImg.cloneNode(false); // 克隆预加载的图片
+                    
+                    cell.appendChild(img);
+                    grid.appendChild(cell);
+                }
+            }
+            
+            const duration = performance.now() - start;
+            
+            resultDiv.innerHTML = `
+                <div class="result">
+                    <div class="metric">
+                        <span><strong>⏱️ 总耗时</strong></span>
+                        <span style="color: #4caf50;"><strong>${duration.toFixed(2)} ms</strong></span>
+                    </div>
+                    <div class="metric">
+                        <span>渲染次数</span>
+                        <span>${iterations} 次</span>
+                    </div>
+                    <div class="metric">
+                        <span>每次格子数</span>
+                        <span>${cells} 个</span>
+                    </div>
+                    <div class="metric">
+                        <span>平均每次</span>
+                        <span style="color: #4caf50;">${(duration / iterations).toFixed(2)} ms</span>
+                    </div>
+                    <div class="metric">
+                        <span>总操作数</span>
+                        <span>${iterations * cells} 次</span>
+                    </div>
+                </div>
+            `;
+            
+            updateComparison();
+        }
+        
+        // 测试 3: CSS 背景图
+        async function testCSSBackground() {
+            const resultDiv = document.getElementById('css-result');
+            resultDiv.innerHTML = '<p style="color: #666;">⏳ 测试中...</p>';
+            
+            const grid = document.createElement('div');
+            grid.className = 'grid';
+            
+            const iterations = 100;
+            const cells = 40;
+            
+            const start = performance.now();
+            
+            for (let iter = 0; iter < iterations; iter++) {
+                grid.innerHTML = '';
+                
+                for (let i = 0; i < cells; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    
+                    // 🎨 CSS 背景图方式
+                    const symbol = Object.values(symbolMap)[i % 9];
+                    cell.style.backgroundImage = `url('${symbol.img}')`;
+                    cell.style.backgroundSize = 'contain';
+                    cell.style.backgroundRepeat = 'no-repeat';
+                    cell.style.backgroundPosition = 'center';
+                    
+                    grid.appendChild(cell);
+                }
+            }
+            
+            const duration = performance.now() - start;
+            
+            resultDiv.innerHTML = `
+                <div class="result">
+                    <div class="metric">
+                        <span><strong>⏱️ 总耗时</strong></span>
+                        <span><strong>${duration.toFixed(2)} ms</strong></span>
+                    </div>
+                    <div class="metric">
+                        <span>渲染次数</span>
+                        <span>${iterations} 次</span>
+                    </div>
+                    <div class="metric">
+                        <span>每次格子数</span>
+                        <span>${cells} 个</span>
+                    </div>
+                    <div class="metric">
+                        <span>平均每次</span>
+                        <span>${(duration / iterations).toFixed(2)} ms</span>
+                    </div>
+                    <div class="metric">
+                        <span>总操作数</span>
+                        <span>${iterations * cells} 次</span>
+                    </div>
+                </div>
+            `;
+            
+            updateComparison();
+        }
+        
+        function updateComparison() {
+            const traditional = document.querySelector('#traditional-result .metric:first-child span:last-child');
+            const preloaded = document.querySelector('#preloaded-result .metric:first-child span:last-child');
+            const css = document.querySelector('#css-result .metric:first-child span:last-child');
+            
+            if (traditional && preloaded) {
+                const tradTime = parseFloat(traditional.textContent);
+                const preloadTime = parseFloat(preloaded.textContent);
+                const improvement = ((tradTime - preloadTime) / tradTime * 100).toFixed(1);
+                const speedup = (tradTime / preloadTime).toFixed(1);
+                
+                document.getElementById('comparison').innerHTML = `
+                    <div class="alert alert-success" style="margin-top: 30px;">
+                        <h3 style="color: #388e3c; margin-bottom: 15px;">📊 性能对比结果</h3>
+                        <div class="metric">
+                            <span>传统加载</span>
+                            <span>${tradTime.toFixed(2)} ms</span>
+                        </div>
+                        <div class="metric">
+                            <span>预加载优化</span>
+                            <span style="color: #4caf50; font-weight: 700;">${preloadTime.toFixed(2)} ms</span>
+                        </div>
+                        <div class="metric">
+                            <span><strong>性能提升</strong></span>
+                            <span style="color: #4caf50; font-weight: 700; font-size: 1.3em;">${improvement}%</span>
+                        </div>
+                        <div class="metric">
+                            <span><strong>速度倍数</strong></span>
+                            <span style="color: #4caf50; font-weight: 700; font-size: 1.3em;">${speedup}x</span>
+                        </div>
+                        <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #c8e6c9;">
+                            <strong>🎉 结论：</strong>预加载优化使渲染速度提升了 <strong>${speedup} 倍</strong>！
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

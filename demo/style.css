@@ -1,0 +1,431 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #fff;
+    transition: background 0.8s ease;
+}
+
+/* FreeGame 整体背景 */
+body.free-game-mode {
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 50%, #f39c12 100%);
+}
+
+.game-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* 主布局：左側遊戲畫面 + 右側控制面板 */
+.main-layout {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+}
+
+.game-board-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.control-panel {
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    position: sticky;
+    top: 20px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 2.5em;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.info-panel {
+    display: flex;
+    justify-content: space-around;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.info-item span:first-child {
+    font-size: 0.9em;
+    opacity: 0.8;
+}
+
+.info-item span:last-child {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+    transition: color 0.5s ease, text-shadow 0.5s ease;
+}
+
+/* FreeGame 模式下的資訊面板數值 */
+body.free-game-mode .info-item span:last-child {
+    color: #ffffff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.board-container {
+    background: black;
+    background-image: url('img/board.jpg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    border-radius: 20px;
+    padding: 30px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 700px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    overflow: visible;
+    position: relative;
+    transition: background-color 0.5s ease;
+}
+
+/* BaseGame 背景 */
+.board-container.base-game {
+    background-color: rgba(30, 30, 30, 0.8);
+}
+
+/* FreeGame 背景 */
+.board-container.free-game {
+    background-color: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 16px rgba(255, 215, 0, 0.5), 0 0 40px rgba(255, 140, 0, 0.4);
+}
+
+.hex-grid {
+    position: relative;
+    width: 600px;
+    height: 600px;
+}
+
+.hex-row {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    gap: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.hex-cell {
+    width: 72px;
+    height: 82px;
+    background: transparent;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.hex-cell:hover {
+    transform: scale(1.15);
+    filter: brightness(1.2);
+    z-index: 10;
+}
+
+.hex-cell.selected {
+    filter: drop-shadow(0 0 10px #ff4500);
+    transform: scale(1.08);
+    z-index: 10;
+}
+
+.hex-cell.wild {
+    animation: pulse 2s infinite;
+}
+
+.hex-cell.eliminating {
+    animation: eliminate 0.5s ease-out forwards;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+@keyframes eliminate {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0.5; }
+    100% { transform: scale(0); opacity: 0; }
+}
+
+@keyframes fall {
+    from { 
+        transform: translateY(-400px); 
+        opacity: 0; 
+    }
+    to { 
+        transform: translateY(0); 
+        opacity: 1; 
+    }
+}
+
+@keyframes slideIn {
+    from { 
+        transform: translateY(-700px); 
+        opacity: 0; 
+    }
+    to { 
+        transform: translateY(0); 
+        opacity: 1; 
+    }
+}
+
+@keyframes megaAppear {
+    0% { 
+        transform: scale(0) rotate(0deg); 
+        opacity: 0; 
+    }
+    50% { 
+        transform: scale(1.3) rotate(180deg); 
+        opacity: 1; 
+    }
+    100% { 
+        transform: scale(1) rotate(360deg); 
+        opacity: 1; 
+    }
+}
+
+.hex-cell.mega-appear img {
+    animation: megaAppear 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.hex-cell img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+
+.hex-cell .symbol-id {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    font-size: 10px;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+button {
+    padding: 15px 30px;
+    font-size: 1.1em;
+    font-weight: bold;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    width: 100%;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-spin {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    color: white;
+}
+
+.btn-spin:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+}
+
+.btn-spin:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn-auto-spin {
+    background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+    color: white;
+}
+
+.btn-auto-spin:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+}
+
+.btn-stop-auto {
+    background: linear-gradient(135deg, #d63031 0%, #e17055 100%);
+    color: white;
+    animation: pulse-stop 1.5s infinite;
+}
+
+@keyframes pulse-stop {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.btn-stop-auto:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+}
+
+.btn-buy-feature {
+    background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+    color: white;
+    font-weight: bold;
+}
+
+.btn-buy-feature:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+}
+
+.btn-buy-feature:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+/* 速度切换按钮 */
+.btn-speed-toggle {
+    background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);
+    color: white;
+    font-size: 0.95em;
+    transition: all 0.3s ease;
+}
+
+.btn-speed-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+}
+
+.btn-speed-toggle.speed-fast {
+    background: linear-gradient(135deg, #ff9ff3 0%, #feca57 100%);
+    animation: speed-pulse 1s infinite;
+}
+
+@keyframes speed-pulse {
+    0%, 100% { 
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    }
+    50% { 
+        box-shadow: 0 4px 15px rgba(255, 159, 243, 0.6);
+    }
+}
+
+/* 統計面板 */
+.stats-panel {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-item:last-child {
+    border-bottom: none;
+}
+
+.stat-label {
+    font-size: 0.95em;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.stat-value {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    transition: color 0.5s ease, text-shadow 0.5s ease;
+}
+
+/* FreeGame 模式下的統計數值 */
+body.free-game-mode .stat-value {
+    color: #ffffff;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.7), 1px 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+/* 響應式設計 */
+@media (max-width: 1200px) {
+    .main-layout {
+        flex-direction: column;
+    }
+    
+    .control-panel {
+        width: 100%;
+        position: static;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    .control-panel button {
+        flex: 1;
+        min-width: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    .hex-grid {
+        width: 400px;
+        height: 400px;
+        transform: scale(0.8);
+    }
+    
+    .hex-cell {
+        width: 60px;
+        height: 68px;
+    }
+    
+    .info-panel {
+        flex-wrap: wrap;
+    }
+    
+    .control-panel {
+        flex-direction: column;
+    }
+    
+    button {
+        width: 100%;
+    }
+    
+    .board-container {
+        min-height: 500px;
+    }
+}

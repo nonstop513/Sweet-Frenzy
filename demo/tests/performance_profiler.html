@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>?§èƒ½?†æ?å·¥å…·</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            font-size: 14px;
+        }
+        .section {
+            background: #252526;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #007acc;
+        }
+        .bottleneck { border-left-color: #f48771; }
+        .good { border-left-color: #4ec9b0; }
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 3px;
+            margin: 5px;
+        }
+        button:hover { background: #1177bb; }
+        pre { margin: 5px 0; color: #ce9178; }
+        .time { color: #4ec9b0; font-weight: bold; }
+        .warn { color: #f48771; font-weight: bold; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        th, td {
+            border: 1px solid #3e3e42;
+            padding: 8px;
+            text-align: left;
+        }
+        th { background: #2d2d30; }
+    </style>
+</head>
+<body>
+    <h1>?? Buy Feature ?§èƒ½?†æ?å·¥å…·</h1>
+    
+    <div class="section">
+        <h3>1ï¸âƒ£ æ£€?¥é??½é?ç½?/h3>
+        <button onclick="checkRedrawConfig()">æ£€?¥é??½ç?</button>
+        <div id="redrawResult"></div>
+    </div>
+    
+    <div class="section">
+        <h3>2ï¸âƒ£ ?§èƒ½æµ‹è?</h3>
+        <button onclick="testPerformance()">æµ‹è? Buy Feature ?§èƒ½</button>
+        <div id="perfResult"></div>
+    </div>
+    
+    <div class="section">
+        <h3>3ï¸âƒ£ è¯¦ç??†æ?</h3>
+        <button onclick="detailedAnalysis()">æ·±åº¦?†æ?ï¼ˆå«?æŠ½ç»Ÿè®¡ï¼?/button>
+        <div id="detailResult"></div>
+    </div>
+
+    <script src="../data.js"></script>
+    <script src="../engine.js"></script>
+    <script>
+        function checkRedrawConfig() {
+            const result = document.getElementById('redrawResult');
+            const baseRedraw = gameData.baseredraw || [];
+            const freeRedraw = gameData.freeredraw || [];
+            
+            // ç»Ÿè®¡????
+            const baseNonZero = baseRedraw.filter(x => x > 0).length;
+            const freeNonZero = freeRedraw.filter(x => x > 0).length;
+            const baseMax = Math.max(...baseRedraw);
+            const freeMax = Math.max(...freeRedraw);
+            
+            let html = '<pre>';
+            html += `BaseGame?æŠ½?? ${baseNonZero}/58ä¸ªåŒº?´é?0, ?€å¤?{(baseMax * 100).toFixed(1)}%\n`;
+            html += `FreeGame?æŠ½?? ${freeNonZero}/58ä¸ªåŒº?´é?0, ?€å¤?{(freeMax * 100).toFixed(1)}%\n\n`;
+            
+            if (freeNonZero === 0) {
+                html += '<span class="good">??FreeGame?æŠ½?‡å…¨ä¸?ï¼Œä?ä¼šå½±?æ€§èƒ½</span>';
+            } else {
+                html += '<span class="warn">? ï? FreeGame?‰é?0?æŠ½?‡ï??¯èƒ½å¯¼è‡´?§èƒ½?®é?ï¼?/span>\n';
+                html += `   é¢„è®¡é¢å??—æ—¶: +${Math.round(freeMax * 100 * 7.4)}ms per spin`;
+            }
+            html += '</pre>';
+            
+            result.innerHTML = html;
+        }
+        
+        function testPerformance() {
+            const result = document.getElementById('perfResult');
+            result.innerHTML = '<pre>??æµ‹è?ä¸?..</pre>';
+            
+            setTimeout(() => {
+                const engine = new GameEngine(gameData);
+                const times = {};
+                
+                // æµ‹è?1: ?•ä¸ªSpin?Ÿæ?
+                let start = performance.now();
+                const singleSpin = engine._generateSingleSpin(0, 0, true, 0);
+                times.singleSpin = performance.now() - start;
+                
+                // æµ‹è?2: å®Œæ•´FreeGame?Ÿæ?ï¼?0 spinï¼?
+                start = performance.now();
+                const freeGame = engine.generateFreeGameScript(10, 0);
+                times.freeGame = performance.now() - start;
+                
+                // æµ‹è?3: ?•ä¸ªSpinï¼ˆå«?æŠ½?ºåˆ¶ï¼?
+                start = performance.now();
+                const spinWithRedraw = engine.generateSpinScript(0, 0, true, 0, 1, true);
+                times.spinWithRedraw = performance.now() - start;
+                
+                let html = '<table>';
+                html += '<tr><th>æµ‹è?é¡¹ç›®</th><th>?—æ—¶</th><th>è¯„çº§</th></tr>';
+                
+                const rate = (ms, good, ok) => {
+                    if (ms < good) return '?? ?å¿«';
+                    if (ms < ok) return '??æ­?¸¸';
+                    return '? ï? è¾ƒæ…¢';
+                };
+                
+                html += `<tr><td>?•ä¸ªSpin?Ÿæ?ï¼ˆæ??æŠ½ï¼?/td><td class="time">${Math.round(times.singleSpin)}ms</td><td>${rate(times.singleSpin, 50, 100)}</td></tr>`;
+                html += `<tr><td>?•ä¸ªSpinï¼ˆå«?æŠ½?»è?ï¼?/td><td class="time">${Math.round(times.spinWithRedraw)}ms</td><td>${rate(times.spinWithRedraw, 60, 120)}</td></tr>`;
+                html += `<tr><td>FreeGameå®Œæ•´?Ÿæ?ï¼?0 spinï¼?/td><td class="time">${Math.round(times.freeGame)}ms</td><td>${rate(times.freeGame, 500, 1000)}</td></tr>`;
+                html += '</table>';
+                
+                html += '<pre>\n?? ?§èƒ½?†æ?:\n';
+                html += `  å¹³å??•Spin?—æ—¶: ${Math.round(times.freeGame / 10)}ms\n`;
+                html += `  ?æŠ½å¼€?€: ${Math.round(times.spinWithRedraw - times.singleSpin)}ms\n`;
+                
+                if (times.freeGame > 1000) {
+                    html += '\n<span class="warn">? ï? FreeGame?Ÿæ?è¶…è?1ç§’ï??¯èƒ½?Ÿå?ï¼?/span>\n';
+                    html += '  1. ?æŠ½?‡è?é«˜ï?æ£€?¥freeredraw?ç½®ï¼‰\n';
+                    html += '  2. å¤§é?retriggerå¯¼è‡´spin?°å?? \n';
+                    html += '  3. å»ºè®®ï¼šç??¨FreeGame?æŠ½?–é?ä½é??½ç?';
+                }
+                html += '</pre>';
+                
+                result.innerHTML = html;
+            }, 100);
+        }
+        
+        function detailedAnalysis() {
+            const result = document.getElementById('detailResult');
+            result.innerHTML = '<pre>??æ·±åº¦?†æ?ä¸?..</pre>';
+            
+            setTimeout(() => {
+                const engine = new GameEngine(gameData);
+                
+                // ç»Ÿè®¡?˜é?
+                let totalRedrawAttempts = 0;
+                let totalCascades = 0;
+                let totalBFSCalls = 0;
+                
+                // è¦†ç?generateSpinScript?¥ç?è®¡é???
+                const originalGenerate = engine.generateSpinScript.bind(engine);
+                engine.generateSpinScript = function(...args) {
+                    const startAttempts = totalRedrawAttempts;
+                    
+                    let attempts = 0;
+                    let script = null;
+                    const maxAttempts = 100;
+                    
+                    while (attempts < maxAttempts) {
+                        attempts++;
+                        totalRedrawAttempts++;
+                        script = this._generateSingleSpin(...args.slice(0, 4));
+                        
+                        if (!args[5] || !this.shouldRedraw(script.totalScore, args[4] || 1, args[2])) {
+                            break;
+                        }
+                    }
+                    
+                    script.redrawAttempts = attempts;
+                    return script;
+                };
+                
+                const start = performance.now();
+                const freeGame = engine.generateFreeGameScript(10, 0);
+                const totalTime = performance.now() - start;
+                
+                // ç»Ÿè®¡cascade??
+                freeGame.spins.forEach(spin => {
+                    totalCascades += spin.cascades.length;
+                });
+                
+                let html = '<pre>';
+                html += `?±ï?  ?»è€—æ—¶: <span class="time">${Math.round(totalTime)}ms</span>\n\n`;
+                html += `?? è¯¦ç?ç»Ÿè®¡:\n`;
+                html += `  ?»Spin?? ${freeGame.spins.length}\n`;
+                html += `  ?»Cascade?? ${totalCascades}\n`;
+                html += `  ?»é??½æ¬¡?? ${totalRedrawAttempts - freeGame.spins.length} (${totalRedrawAttempts}æ¬¡å?è¯?\n`;
+                html += `  å¹³å?æ¯Spin?æŠ½: ${((totalRedrawAttempts / freeGame.spins.length) - 1).toFixed(2)}æ¬¡\n\n`;
+                
+                html += `?’° ?†æ•°ç»Ÿè®¡:\n`;
+                html += `  ?»å?: ${freeGame.totalScore.toLocaleString()}\n`;
+                html += `  Retriggeræ¬¡æ•°: ${freeGame.totalRetriggers}\n\n`;
+                
+                html += `???§èƒ½?†è§£:\n`;
+                const avgSpinTime = totalTime / freeGame.spins.length;
+                const bfsTime = totalCascades * 10;
+                const otherTime = totalTime - bfsTime;
+                
+                html += `  å¹³å??•Spin: ${Math.round(avgSpinTime)}ms\n`;
+                html += `  BFS?¥æ‰¾: ~${bfsTime}ms (${Math.round(bfsTime/totalTime*100)}%)\n`;
+                html += `  ?æŠ½å¼€?€: ~${Math.round((totalRedrawAttempts - freeGame.spins.length) * avgSpinTime)}ms\n`;
+                html += `  ?¶ä?è®¡ç?: ~${Math.round(otherTime - (totalRedrawAttempts - freeGame.spins.length) * avgSpinTime)}ms\n\n`;
+                
+                if (totalRedrawAttempts > freeGame.spins.length * 1.2) {
+                    html += '<span class="warn">?”¥ ?æŠ½æ¬¡æ•°è¾ƒå?ï¼å»ºè®®ï?</span>\n';
+                    html += '  1. ?ä?freeredraw?ç½®ä¸­ç??æŠ½?‡\n';
+                    html += '  2. ?–åœ¨FreeGame?Ÿæ??¶ç??¨é??½\n';
+                    html += '  3. ä¿®æ”¹?¹å?: generateSpinScript(..., 1, false)\n';
+                }
+                
+                html += '</pre>';
+                result.innerHTML = html;
+            }, 100);
+        }
+        
+        // ?ªåŠ¨è¿è??ç½®æ£€??
+        window.onload = () => checkRedrawConfig();
+    </script>
+</body>
+</html>

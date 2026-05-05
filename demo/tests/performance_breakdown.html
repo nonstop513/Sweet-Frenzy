@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>?†È??ΩÊÄßËÉΩ?ÜÊ?</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            font-size: 14px;
+        }
+        .section {
+            background: #252526;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #007acc;
+        }
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 3px;
+            margin: 5px;
+        }
+        button:hover { background: #1177bb; }
+        pre { margin: 5px 0; }
+        .time { color: #4ec9b0; font-weight: bold; }
+        .breakdown {
+            background: #2d2d30;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 3px solid #4ec9b0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        th, td {
+            border: 1px solid #3e3e42;
+            padding: 8px;
+            text-align: left;
+        }
+        th { background: #2d2d30; }
+        .bar {
+            height: 20px;
+            background: linear-gradient(90deg, #0e639c, #1177bb);
+            margin: 5px 0;
+            position: relative;
+        }
+        .bar-label {
+            position: absolute;
+            left: 10px;
+            line-height: 20px;
+            color: white;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>?? ?†È??ΩÊÄßËÉΩ?ÜÊ?ÔºàËØ¶ÁªÜÂ?Ëß??</h1>
+    
+    <div class="section">
+        <h3>?ï‰∏™Spin?üÊ? - ÂÆåÊï¥ËÆ°Êó∂</h3>
+        <button onclick="profileSingleSpin()">?ÜÊ??ï‰∏™Spin</button>
+        <div id="singleSpinResult"></div>
+    </div>
+    
+    <div class="section">
+        <h3>FreeGame 10 Spin - Á¥ØËÆ°ÁªüËÆ°</h3>
+        <button onclick="profileFreeGame()">?ÜÊ?ÂÆåÊï¥FreeGame</button>
+        <div id="freeGameResult"></div>
+    </div>
+
+    <script src="../data.js"></script>
+    <script src="../engine.js"></script>
+    <script>
+        function profileSingleSpin() {
+            const result = document.getElementById('singleSpinResult');
+            result.innerHTML = '<pre>???ÜÊ?‰∏?..</pre>';
+            
+            setTimeout(() => {
+                const engine = new GameEngine(gameData);
+                const timings = {};
+                
+                // ?õÂª∫ËÆ°Êó∂Ë£ÖÈ•∞??
+                const timeFunction = (obj, fnName, label) => {
+                    const original = obj[fnName].bind(obj);
+                    obj[fnName] = function(...args) {
+                        const start = performance.now();
+                        const result = original(...args);
+                        const duration = performance.now() - start;
+                        timings[label] = (timings[label] || 0) + duration;
+                        return result;
+                    };
+                };
+                
+                // ?ÖË??≥ÈîÆ?ΩÊï∞
+                timeFunction(engine, 'generateInitialBoard', 'initialBoard');
+                timeFunction(engine, 'findAllMatches', 'findMatches');
+                timeFunction(engine, 'calculateScore', 'calculateScore');
+                timeFunction(engine, 'applyGravity', 'gravity');
+                timeFunction(engine, 'fillDropSymbols', 'fillDrop');
+                timeFunction(engine, 'cloneBoard', 'cloneBoard');
+                timeFunction(engine, 'placeMegaSymbols', 'megaPlace');
+                
+                const totalStart = performance.now();
+                const script = engine._generateSingleSpin(0, 0, true, 0);
+                const totalTime = performance.now() - totalStart;
+                
+                // ËÆ°Á??∂‰??∂Èó¥
+                const measuredTime = Object.values(timings).reduce((a, b) => a + b, 0);
+                timings['other'] = totalTime - measuredTime;
+                
+                let html = '<div class="breakdown">';
+                html += `<pre>?±Ô?  ?ªËÄóÊó∂: <span class="time">${Math.round(totalTime)}ms</span>\n`;
+                html += `?? Cascade?? ${script.cascades.length}\n`;
+                html += `?í∞ ?ªÂ?: ${script.totalScore}\n</pre>`;
+                html += '</div>';
+                
+                html += '<table>';
+                html += '<tr><th>?ç‰?</th><th>?óÊó∂</th><th>?†Ê?</th><th>Ë∞ÉÁî®Ê¨°Êï∞</th><th>?ïÊ¨°</th></tr>';
+                
+                const items = [
+                    { label: 'BFS?•Êâæ?πÈ?', key: 'findMatches', calls: script.cascades.length },
+                    { label: '?ùÂ??òÈù¢?üÊ?', key: 'initialBoard', calls: 1 },
+                    { label: 'Â°´Â?Á¨¶Âè∑', key: 'fillDrop', calls: script.cascades.length },
+                    { label: '?çÂ?Ê®°Ê?', key: 'gravity', calls: script.cascades.length },
+                    { label: '?∞Á??ãÈ?', key: 'cloneBoard', calls: script.cascades.length * 2 },
+                    { label: '?ÜÊï∞ËÆ°Á?', key: 'calculateScore', calls: 'N' },
+                    { label: 'Mega?æÁΩÆ', key: 'megaPlace', calls: 'N' },
+                    { label: '?∂‰??ç‰?', key: 'other', calls: '-' }
+                ];
+                
+                items.forEach(item => {
+                    const time = timings[item.key] || 0;
+                    const percent = (time / totalTime * 100).toFixed(1);
+                    const avgTime = item.calls > 0 ? (time / item.calls).toFixed(1) : '-';
+                    
+                    if (time > 0) {
+                        html += `<tr>`;
+                        html += `<td>${item.label}</td>`;
+                        html += `<td class="time">${Math.round(time)}ms</td>`;
+                        html += `<td>${percent}%</td>`;
+                        html += `<td>${item.calls}</td>`;
+                        html += `<td>${avgTime}ms</td>`;
+                        html += `</tr>`;
+                    }
+                });
+                
+                html += '</table>';
+                
+                // ?ØË???
+                html += '<h4>?∂Èó¥?ÜÂ??ØË??ñÔ?</h4>';
+                const sortedItems = items
+                    .map(item => ({ ...item, time: timings[item.key] || 0 }))
+                    .filter(item => item.time > 0)
+                    .sort((a, b) => b.time - a.time);
+                
+                sortedItems.forEach(item => {
+                    const width = (item.time / totalTime * 100).toFixed(1);
+                    html += `<div class="bar" style="width: ${width}%">`;
+                    html += `<span class="bar-label">${item.label}: ${Math.round(item.time)}ms (${width}%)</span>`;
+                    html += '</div>';
+                });
+                
+                result.innerHTML = html;
+            }, 100);
+        }
+        
+        function profileFreeGame() {
+            const result = document.getElementById('freeGameResult');
+            result.innerHTML = '<pre>???ÜÊ?‰∏?..</pre>';
+            
+            setTimeout(() => {
+                const engine = new GameEngine(gameData);
+                const timings = {};
+                let totalCalls = {};
+                
+                // ?õÂª∫ËÆ°Êó∂Ë£ÖÈ•∞??
+                const timeFunction = (obj, fnName, label) => {
+                    const original = obj[fnName].bind(obj);
+                    obj[fnName] = function(...args) {
+                        const start = performance.now();
+                        const result = original(...args);
+                        const duration = performance.now() - start;
+                        timings[label] = (timings[label] || 0) + duration;
+                        totalCalls[label] = (totalCalls[label] || 0) + 1;
+                        return result;
+                    };
+                };
+                
+                // ?ÖË??≥ÈîÆ?ΩÊï∞
+                timeFunction(engine, 'generateInitialBoard', 'initialBoard');
+                timeFunction(engine, 'findAllMatches', 'findMatches');
+                timeFunction(engine, 'findConnectedGroup', 'bfsSearch');
+                timeFunction(engine, 'calculateScore', 'calculateScore');
+                timeFunction(engine, 'applyGravity', 'gravity');
+                timeFunction(engine, 'fillDropSymbols', 'fillDrop');
+                timeFunction(engine, 'cloneBoard', 'cloneBoard');
+                timeFunction(engine, 'convertMySymbols', 'convertMY');
+                
+                const totalStart = performance.now();
+                const freeGame = engine.generateFreeGameScript(10, 0);
+                const totalTime = performance.now() - totalStart;
+                
+                // ÁªüËÆ°
+                let totalCascades = 0;
+                let totalMatches = 0;
+                freeGame.spins.forEach(spin => {
+                    totalCascades += spin.cascades.length;
+                    spin.cascades.forEach(cascade => {
+                        totalMatches += cascade.matches?.length || 0;
+                    });
+                });
+                
+                let html = '<div class="breakdown">';
+                html += `<pre>?±Ô?  ?ªËÄóÊó∂: <span class="time">${Math.round(totalTime)}ms</span>\n`;
+                html += `?? ÁªüËÆ°:\n`;
+                html += `  - ?ªSpin?? ${freeGame.spins.length}\n`;
+                html += `  - ?ªCascade?? ${totalCascades}\n`;
+                html += `  - ?ªÂåπ?çÁ??? ${totalMatches}\n`;
+                html += `  - Âπ≥Â?ÊØèSpin: ${Math.round(totalTime / freeGame.spins.length)}ms\n`;
+                html += `  - Âπ≥Â?ÊØèCascade: ${Math.round(totalTime / totalCascades)}ms\n</pre>`;
+                html += '</div>';
+                
+                html += '<table>';
+                html += '<tr><th>?ç‰?</th><th>Á¥ØËÆ°?óÊó∂</th><th>?†Ê?</th><th>Ë∞ÉÁî®Ê¨°Êï∞</th><th>Âπ≥Â?</th></tr>';
+                
+                const sortedTimings = Object.entries(timings)
+                    .sort((a, b) => b[1] - a[1]);
+                
+                const labels = {
+                    'findMatches': 'BFS?•Êâæ?πÈ?',
+                    'bfsSearch': 'BFSËøûÈÄöÁ??•Êâæ',
+                    'fillDrop': 'Â°´Â?Á¨¶Âè∑',
+                    'gravity': '?çÂ?Ê®°Ê?',
+                    'cloneBoard': '?∞Á??ãÈ?',
+                    'initialBoard': '?ùÂ??òÈù¢?üÊ?',
+                    'calculateScore': '?ÜÊï∞ËÆ°Á?',
+                    'convertMY': 'MYÁ¨¶Âè∑ËΩ¨Êç¢'
+                };
+                
+                sortedTimings.forEach(([key, time]) => {
+                    const percent = (time / totalTime * 100).toFixed(1);
+                    const calls = totalCalls[key] || 0;
+                    const avg = calls > 0 ? (time / calls).toFixed(2) : '-';
+                    
+                    html += `<tr>`;
+                    html += `<td>${labels[key] || key}</td>`;
+                    html += `<td class="time">${Math.round(time)}ms</td>`;
+                    html += `<td>${percent}%</td>`;
+                    html += `<td>${calls}</td>`;
+                    html += `<td>${avg}ms</td>`;
+                    html += `</tr>`;
+                });
+                
+                html += '</table>';
+                
+                // ?ØË???
+                html += '<h4>?∂Èó¥?ÜÂ?ÔºàTop 5ÔºâÔ?</h4>';
+                sortedTimings.slice(0, 5).forEach(([key, time]) => {
+                    const width = (time / totalTime * 100).toFixed(1);
+                    html += `<div class="bar" style="width: ${width}%">`;
+                    html += `<span class="bar-label">${labels[key] || key}: ${Math.round(time)}ms (${width}%)</span>`;
+                    html += '</div>';
+                });
+                
+                // ?ßËÉΩÂª∫ËÆÆ
+                html += '<div class="breakdown">';
+                html += '<h4>?í° ?ßËÉΩ?∂È??ÜÊ?Ôº?/h4><pre>';
+                
+                const bfsTime = (timings['findMatches'] || 0) + (timings['bfsSearch'] || 0);
+                const bfsPercent = (bfsTime / totalTime * 100).toFixed(1);
+                
+                if (bfsPercent > 30) {
+                    html += `?î• BFS?•Êâæ?†Ê?${bfsPercent}% - ‰∏ªË??∂È?\n`;
+                    html += `   Â∑≤‰??? ‰ΩøÁî®Á¥¢Â?‰ª?õøshift() ?ì\n`;
+                    html += `   Â∑≤‰??? Â§çÁî®visited?∞Á? ?ì\n`;
+                }
+                
+                const clonePercent = ((timings['cloneBoard'] || 0) / totalTime * 100).toFixed(1);
+                if (clonePercent > 15) {
+                    html += `\n?? ?∞Á??ãÈ??†Ê?${clonePercent}%\n`;
+                    html += `   Â∑≤‰??? ?ßËÉΩÊ®°Â??èÂ?Âø´ÁÖß ?ì\n`;
+                }
+                
+                html += `\n??ÂΩìÂ??ßËÉΩÂ∑≤‰??ñÔ?${Math.round(totalTime / freeGame.spins.length)}ms/spin?ØÂ??ÜÊ∞¥Âπ≥`;
+                html += '</pre></div>';
+                
+                result.innerHTML = html;
+            }, 100);
+        }
+        
+        // ?™Âä®ËøêË?
+        window.onload = () => profileSingleSpin();
+    </script>
+</body>
+</html>

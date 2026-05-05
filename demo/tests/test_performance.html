@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>?ßËÉΩÊµãË?</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            font-size: 14px;
+        }
+        .result {
+            background: #252526;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #007acc;
+        }
+        .fast { border-left-color: #4ec9b0; }
+        .slow { border-left-color: #f48771; }
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 3px;
+            margin: 5px;
+        }
+        button:hover { background: #1177bb; }
+        pre { margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <h1>?î• Buy Feature ?ßËÉΩÊµãË?</h1>
+    
+    <div>
+        <button onclick="runTest(1)">ÊµãË? 1 Ê¨?/button>
+        <button onclick="runTest(5)">ÊµãË? 5 Ê¨?/button>
+        <button onclick="runTest(10)">ÊµãË? 10 Ê¨?/button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script src="../data.js"></script>
+    <script src="../engine.js"></script>
+    <script>
+        function runTest(count) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="result">??ÊµãË?‰∏?..</div>';
+            
+            // Âª∂Ë??ßË?‰ª•ÊòæÁ§∫UI?¥Êñ∞
+            setTimeout(() => {
+                const engine = new GameEngine(gameData);
+                const times = [];
+                const scores = [];
+                
+                for (let i = 0; i < count; i++) {
+                    const start = performance.now();
+                    const script = engine.buyFeature();
+                    const end = performance.now();
+                    
+                    const duration = Math.round(end - start);
+                    times.push(duration);
+                    scores.push(script.totalScore);
+                }
+                
+                const avgTime = Math.round(times.reduce((a, b) => a + b, 0) / count);
+                const minTime = Math.min(...times);
+                const maxTime = Math.max(...times);
+                const avgScore = Math.round(scores.reduce((a, b) => a + b, 0) / count);
+                
+                let speedClass = 'result';
+                let speedEmoji = '?†Ô?';
+                let speedText = '?ØÊé•??;
+                
+                if (avgTime < 300) {
+                    speedClass = 'result fast';
+                    speedEmoji = '??';
+                    speedText = '?ÅÂø´';
+                } else if (avgTime < 500) {
+                    speedClass = 'result fast';
+                    speedEmoji = '??;
+                    speedText = 'ÂæàÂø´';
+                } else if (avgTime < 1000) {
+                    speedClass = 'result';
+                    speedEmoji = '?†Ô?';
+                    speedText = '?ØÊé•??;
+                } else {
+                    speedClass = 'result slow';
+                    speedEmoji = '??;
+                    speedText = '?ÄË¶Å‰???;
+                }
+                
+                resultsDiv.innerHTML = `
+                    <div class="${speedClass}">
+                        <h3>${speedEmoji} ÊµãË?ÁªìÊ? (${count}Ê¨?</h3>
+                        <pre>?±Ô?  Âπ≥Â??óÊó∂: ${avgTime}ms (${minTime}-${maxTime}ms)</pre>
+                        <pre>?? Âπ≥Â??ÜÊï∞: ${avgScore.toLocaleString()}</pre>
+                        <pre>?éØ ?ßËÉΩËØÑÁ∫ß: ${speedText}</pre>
+                        ${count > 1 ? `<pre>?? ËØ¶Á??∞ÊçÆ: ${times.join(', ')}ms</pre>` : ''}
+                    </div>
+                `;
+            }, 100);
+        }
+        
+        // ?™Âä®ËøêË?‰∏ÄÊ¨°Ê?ËØ?
+        window.onload = () => runTest(1);
+    </script>
+</body>
+</html>

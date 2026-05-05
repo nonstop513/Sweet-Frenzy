@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>?”¬ è¯¦ç??§èƒ½æµ‹è?</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .test-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+            color: white;
+        }
+        
+        .btn-info {
+            background: linear-gradient(135deg, #2196F3 0%, #21CBF3 100%);
+            color: white;
+        }
+        
+        .result-box {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .metric:last-child {
+            border-bottom: none;
+        }
+        
+        .metric-label {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .metric-value {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 1.1em;
+        }
+        
+        .time-large {
+            font-size: 2em;
+            color: #f5576c;
+        }
+        
+        .log-container {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid #333;
+        }
+        
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .log-time {
+            color: #858585;
+            margin-right: 10px;
+        }
+        
+        .log-info {
+            color: #4fc3f7;
+        }
+        
+        .log-success {
+            color: #81c784;
+        }
+        
+        .log-warning {
+            color: #ffb74d;
+        }
+        
+        .log-error {
+            color: #e57373;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card h4 {
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        
+        .stat-card .value {
+            font-size: 2em;
+            font-weight: 700;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .comparison-table th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .comparison-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        
+        .alert-info {
+            background: #e3f2fd;
+            color: #1976d2;
+            border-left: 4px solid #2196F3;
+        }
+        
+        .alert-success {
+            background: #e8f5e9;
+            color: #388e3c;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .alert-warning {
+            background: #fff3e0;
+            color: #f57c00;
+            border-left: 4px solid #ff9800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>?”¬ è¯¦ç??§èƒ½æµ‹è?å·¥å…·</h1>
+            <p>ç²¾ç¡®æµ‹é??Ÿå??Ÿæ??¶é—´ä¸æ€§èƒ½?‡æ?</p>
+        </div>
+        
+        <div class="content">
+            <!-- æµ‹è?è¯´æ? -->
+            <div class="alert alert-info">
+                <strong>?? æµ‹è?è¯´æ?ï¼?/strong>?¬å·¥?·ä½¿??<code>performance.now()</code> ç²¾ç¡®æµ‹é??Ÿæ??¶é—´ï¼?
+                å¹¶ç?è®?BFS è°ƒç”¨æ¬¡æ•°?é??½æ¬¡?°ç??³é”®?‡æ???
+            </div>
+            
+            <!-- å¿«é€Ÿæ?è¯?-->
+            <div class="test-section">
+                <h3>??å¿«é€Ÿæ?è¯?/h3>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="testSingleSpin()">æµ‹è??•ä¸ª Spin</button>
+                    <button class="btn-primary" onclick="testFreeGame10()">æµ‹è? FreeGame (10 Spin)</button>
+                    <button class="btn-success" onclick="testMultipleTimes()">?å?æµ‹è? 5 æ¬?/button>
+                    <button class="btn-info" onclick="clearResults()">æ¸…é™¤ç»“æ?</button>
+                </div>
+                <div id="quickResult"></div>
+            </div>
+            
+            <!-- è¯¦ç??†æ? -->
+            <div class="test-section">
+                <h3>?? è¯¦ç??§èƒ½?†æ?</h3>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="detailedAnalysis()">è¿è?è¯¦ç??†æ?</button>
+                </div>
+                <div id="detailedResult"></div>
+            </div>
+            
+            <!-- å¯¹æ?æµ‹è? -->
+            <div class="test-section">
+                <h3>?–ï? ?§èƒ½å¯¹æ?æµ‹è?</h3>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="comparePerformance()">å¯¹æ?ï¼šæ?/? é???/button>
+                </div>
+                <div id="compareResult"></div>
+            </div>
+            
+            <!-- å®æ—¶?¥å? -->
+            <div class="test-section">
+                <h3>?? å®æ—¶?¥å?</h3>
+                <div class="log-container" id="logContainer"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="../data.js"></script>
+    <script src="../engine.js"></script>
+    
+    <script>
+        const logContainer = document.getElementById('logContainer');
+        let testCount = 0;
+        
+        // æ·»å??¥å?
+        function addLog(message, type = 'info') {
+            const time = new Date().toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 });
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="log-time">[${time}]</span><span class="log-${type}">${message}</span>`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        // æ¸…é™¤ç»“æ?
+        function clearResults() {
+            document.getElementById('quickResult').innerHTML = '';
+            document.getElementById('detailedResult').innerHTML = '';
+            document.getElementById('compareResult').innerHTML = '';
+            logContainer.innerHTML = '';
+            addLog('??ç»“æ?å·²æ???, 'success');
+        }
+        
+        // Hook ?§èƒ½ç»Ÿè®¡
+        function createInstrumentedEngine() {
+            const engine = new GameEngine(gameData);
+            const stats = {
+                bfsCallCount: 0,
+                findAllMatchesCount: 0,
+                redrawCount: 0,
+                spinGenerated: 0,
+                totalGroups: 0
+            };
+            
+            // Hook BFS ?¹æ?ï¼ˆæ­£ç¡®ç??¹æ??æ˜¯ findConnectedGroupï¼Œå??°ï?
+            const originalFindConnectedGroup = engine.findConnectedGroup;
+            engine.findConnectedGroup = function(...args) {
+                stats.bfsCallCount++;
+                return originalFindConnectedGroup.apply(this, args);
+            };
+            
+            // Hook findAllMatches ?¹æ?
+            const originalFindAllMatches = engine.findAllMatches;
+            engine.findAllMatches = function(...args) {
+                stats.findAllMatchesCount++;
+                const result = originalFindAllMatches.apply(this, args);
+                stats.totalGroups += result.length;
+                return result;
+            };
+            
+            // Hook shouldRedraw ?¹æ?
+            const originalShouldRedraw = engine.shouldRedraw;
+            if (originalShouldRedraw) {
+                engine.shouldRedraw = function(...args) {
+                    const result = originalShouldRedraw.apply(this, args);
+                    if (result) stats.redrawCount++;
+                    return result;
+                };
+            }
+            
+            return { engine, stats };
+        }
+        
+        // æµ‹è??•ä¸ª Spin
+        function testSingleSpin() {
+            addLog('?? å¼€å§‹æ?è¯•å?ä¸?Spin...', 'info');
+            
+            const { engine, stats } = createInstrumentedEngine();
+            
+            const startTime = performance.now();
+            const spin = engine._generateSingleSpin(false, 0, 1);
+            const duration = performance.now() - startTime;
+            
+            const result = `
+                <div class="result-box">
+                    <div class="metric">
+                        <span class="metric-label">?±ï? ?Ÿæ??¶é—´</span>
+                        <span class="metric-value time-large">${duration.toFixed(2)} ms</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">?¯ ?»å???/span>
+                        <span class="metric-value">${spin.totalScore.toLocaleString()}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">?? BFS è°ƒç”¨æ¬¡æ•°</span>
+                        <span class="metric-value">${stats.bfsCallCount}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">ï¿?findAllMatches è°ƒç”¨</span>
+                        <span class="metric-value">${stats.findAllMatchesCount}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">?? è¿çº¿??/span>
+                        <span class="metric-value">${stats.totalGroups}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">?? ?æŠ½æ¬¡æ•°</span>
+                        <span class="metric-value">${stats.redrawCount}</span>
+                    </div>
+                    ${stats.bfsCallCount === 0 ? '<div class="alert alert-warning" style="margin-top: 15px;">? ï? BFSè°ƒç”¨æ¬¡æ•°ä¸?ï¼å¯?½å??¨é—®é¢˜ã€?/div>' : ''}
+                </div>
+            `;
+            
+            document.getElementById('quickResult').innerHTML = result;
+            addLog(`???•ä¸ª Spin å®Œæ?ï¼?{duration.toFixed(2)}msï¼ŒBFSè°ƒç”¨ ${stats.bfsCallCount} æ¬¡`, 'success');
+            
+            if (stats.bfsCallCount === 0) {
+                addLog('? ï? è­¦å?ï¼šBFSè°ƒç”¨æ¬¡æ•°ä¸?ï¼Œç??å¯?½æ??®é?ï¼?, 'warning');
+            }
+        }
+        
+        // æµ‹è? FreeGame (10 Spin)
+        function testFreeGame10() {
+            addLog('?? å¼€å§‹æ?è¯?FreeGame (10 Spin)...', 'info');
+            
+            const { engine, stats } = createInstrumentedEngine();
+            
+            const startTime = performance.now();
+            const script = engine.generateFreeGameScript(10, 0);
+            const duration = performance.now() - startTime;
+            
+            const avgTime = duration / script.spins.length;
+            const avgBFS = stats.bfsCallCount / script.spins.length;
+            
+            const result = `
+                <div class="result-box">
+                    <div class="metric">
+                        <span class="metric-label">?±ï? ?»ç??æ—¶??/span>
+                        <span class="metric-value time-large">${duration.toFixed(2)} ms</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">?? å¹³å?æ¯?Spin</span>
+                        <span class="metric-value">${avgTime.toFixed(2)} ms</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">?¯ ?»å???/span>
+                        <span class="metric-value">${script.totalScore.toLocaleString()}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">?° ??Spin ??/span>
+                        <span class="metric-value">${script.spins.length}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">?? BFS ?»è??¨æ¬¡??/span>
+                        <span class="metric-value">${stats.bfsCallCount}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">ï¿?findAllMatches è°ƒç”¨</span>
+                        <span class="metric-value">${stats.findAllMatchesCount}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">?? å¹³å?æ¯?Spin BFS</span>
+                        <span class="metric-value">${avgBFS.toFixed(1)}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">?? ?»è?çº¿æ•°</span>
+                        <span class="metric-value">${stats.totalGroups}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">?? ?»é??½æ¬¡??/span>
+                        <span class="metric-value">${stats.redrawCount}</span>
+                    </div>
+                    ${stats.bfsCallCount === 0 ? '<div class="alert alert-warning" style="margin-top: 15px;">? ï? BFSè°ƒç”¨æ¬¡æ•°ä¸?ï¼Œå¯?½å??¨é—®é¢˜ï?</div>' : ''}
+                </div>
+            `;
+            
+            document.getElementById('quickResult').innerHTML = result;
+            addLog(`??FreeGame å®Œæ?ï¼?{duration.toFixed(2)}msï¼Œå¹³?‡æ?Spin ${avgTime.toFixed(2)}msï¼ŒBFSè°ƒç”¨ ${stats.bfsCallCount} æ¬¡ï??æŠ½ ${stats.redrawCount} æ¬¡`, 'success');
+            
+            if (stats.bfsCallCount === 0) {
+                addLog('? ï? è­¦å?ï¼šBFSè°ƒç”¨æ¬¡æ•°ä¸?ï¼Œè?ä¸æ­£å¸¸ï?', 'warning');
+                addLog('?¯èƒ½?Ÿå?ï¼?) Hookå¤±è´¥ 2) ?°æ®? è½½?™è¯¯ 3) ?Ÿæ??»è?è¢«è·³è¿?, 'warning');
+            }
+        }
+        
+        // ?å?æµ‹è? 5 æ¬?
+        function testMultipleTimes() {
+            addLog('?? å¼€å§‹é?å¤æ?è¯?5 æ¬?..', 'info');
+            
+            const times = [];
+            const bfsCounts = [];
+            const redrawCounts = [];
+            
+            for (let i = 0; i < 5; i++) {
+                const { engine, stats } = createInstrumentedEngine();
+                
+                const startTime = performance.now();
+                const script = engine.generateFreeGameScript(10, 0);
+                const duration = performance.now() - startTime;
+                
+                times.push(duration);
+                bfsCounts.push(stats.bfsCallCount);
+                redrawCounts.push(stats.redrawCount);
+                
+                addLog(`  æµ‹è? ${i+1}/5: ${duration.toFixed(2)}ms, BFS ${stats.bfsCallCount} æ¬? ?æŠ½ ${stats.redrawCount} æ¬¡`, 'info');
+            }
+            
+            const avgTime = times.reduce((a,b) => a+b, 0) / times.length;
+            const minTime = Math.min(...times);
+            const maxTime = Math.max(...times);
+            const avgBFS = bfsCounts.reduce((a,b) => a+b, 0) / bfsCounts.length;
+            const avgRedraw = redrawCounts.reduce((a,b) => a+b, 0) / redrawCounts.length;
+            
+            const result = `
+                <div class="result-box">
+                    <h4 style="margin-bottom: 15px; color: #667eea;">?? 5 æ¬¡æ?è¯•ç?è®¡ç???/h4>
+                    <table class="comparison-table">
+                        <tr>
+                            <th>?‡æ?</th>
+                            <th>å¹³å???/th>
+                            <th>?€å°å€?/th>
+                            <th>?€å¤§å€?/th>
+                        </tr>
+                        <tr>
+                            <td>?±ï? ?Ÿæ??¶é—´</td>
+                            <td><strong>${avgTime.toFixed(2)} ms</strong></td>
+                            <td>${minTime.toFixed(2)} ms</td>
+                            <td>${maxTime.toFixed(2)} ms</td>
+                        </tr>
+                        <tr>
+                            <td>?? BFS è°ƒç”¨</td>
+                            <td><strong>${avgBFS.toFixed(1)}</strong></td>
+                            <td>${Math.min(...bfsCounts)}</td>
+                            <td>${Math.max(...bfsCounts)}</td>
+                        </tr>
+                        <tr>
+                            <td>?? ?æŠ½æ¬¡æ•°</td>
+                            <td><strong>${avgRedraw.toFixed(1)}</strong></td>
+                            <td>${Math.min(...redrawCounts)}</td>
+                            <td>${Math.max(...redrawCounts)}</td>
+                        </tr>
+                    </table>
+                    <div style="margin-top: 15px; padding: 10px; background: #f0f0f0; border-radius: 5px;">
+                        <strong>?¯ ç¨³å??§å??ï?</strong>
+                        æ³¢åŠ¨?ƒå›´ ${minTime.toFixed(2)}ms ~ ${maxTime.toFixed(2)}ms (Â±${((maxTime-minTime)/avgTime*100).toFixed(1)}%)
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('quickResult').innerHTML = result;
+            addLog(`???å?æµ‹è?å®Œæ?ï¼šå¹³??${avgTime.toFixed(2)}ms`, 'success');
+        }
+        
+        // è¯¦ç??§èƒ½?†æ?
+        function detailedAnalysis() {
+            addLog('?? å¼€å§‹è¯¦ç»†æ€§èƒ½?†æ?...', 'info');
+            
+            const { engine, stats } = createInstrumentedEngine();
+            
+            // æµ‹è??„ä¸ª?¶æ®µ?„æ—¶??
+            const timings = {
+                total: 0,
+                spins: []
+            };
+            
+            const overallStart = performance.now();
+            
+            for (let i = 0; i < 10; i++) {
+                const spinStart = performance.now();
+                const spin = engine._generateSingleSpin(true, i, 1);
+                const spinDuration = performance.now() - spinStart;
+                
+                timings.spins.push({
+                    index: i + 1,
+                    duration: spinDuration,
+                    score: spin.totalScore,
+                    groups: spin.allConnectedGroups.length
+                });
+                
+                addLog(`  Spin ${i+1}: ${spinDuration.toFixed(2)}ms, å¾—å? ${spin.totalScore}, è¿çº¿ ${spin.allConnectedGroups.length}`, 'info');
+            }
+            
+            timings.total = performance.now() - overallStart;
+            
+            // ?Ÿæ?è¯¦ç??¥å?
+            let spinDetailsHTML = '';
+            timings.spins.forEach(spin => {
+                spinDetailsHTML += `
+                    <tr>
+                        <td>Spin ${spin.index}</td>
+                        <td>${spin.duration.toFixed(2)} ms</td>
+                        <td>${spin.score.toLocaleString()}</td>
+                        <td>${spin.groups}</td>
+                    </tr>
+                `;
+            });
+            
+            const result = `
+                <div class="result-box">
+                    <h4 style="margin-bottom: 15px; color: #667eea;">?”¬ è¯¦ç??§èƒ½?†æ??¥å?</h4>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h4>?»è€—æ—¶</h4>
+                            <div class="value">${timings.total.toFixed(0)} ms</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>å¹³å?æ¯?Spin</h4>
+                            <div class="value">${(timings.total / 10).toFixed(1)} ms</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>BFS è°ƒç”¨</h4>
+                            <div class="value">${stats.bfsCallCount}</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>?æŠ½æ¬¡æ•°</h4>
+                            <div class="value">${stats.redrawCount}</div>
+                        </div>
+                    </div>
+                    
+                    <h4 style="margin: 20px 0 10px 0; color: #667eea;">?? æ¯ä¸ª Spin è¯¦æ?</h4>
+                    <table class="comparison-table">
+                        <tr>
+                            <th>Spin</th>
+                            <th>?—æ—¶</th>
+                            <th>å¾—å?</th>
+                            <th>è¿çº¿??/th>
+                        </tr>
+                        ${spinDetailsHTML}
+                    </table>
+                </div>
+            `;
+            
+            document.getElementById('detailedResult').innerHTML = result;
+            addLog(`??è¯¦ç??†æ?å®Œæ?ï¼šæ€»è€—æ—¶ ${timings.total.toFixed(2)}ms`, 'success');
+        }
+        
+        // ?§èƒ½å¯¹æ?æµ‹è?
+        function comparePerformance() {
+            addLog('?? å¼€å§‹æ€§èƒ½å¯¹æ?æµ‹è?...', 'info');
+            
+            // æµ‹è? 1: å½“å??ç½®ï¼ˆæ­£å¸¸ï?
+            addLog('  æµ‹è? 1/2: å½“å??ç½®...', 'info');
+            const { engine: engine1, stats: stats1 } = createInstrumentedEngine();
+            const start1 = performance.now();
+            const script1 = engine1.generateFreeGameScript(10, 0);
+            const duration1 = performance.now() - start1;
+            
+            // æµ‹è? 2: ç¦ç”¨?æŠ½
+            addLog('  æµ‹è? 2/2: ç¦ç”¨?æŠ½...', 'info');
+            const { engine: engine2, stats: stats2 } = createInstrumentedEngine();
+            const originalGenerateSpinScript = engine2.generateSpinScript.bind(engine2);
+            engine2.generateSpinScript = function(...args) {
+                args[5] = false; // enableRedraw = false
+                return originalGenerateSpinScript(...args);
+            };
+            const start2 = performance.now();
+            const script2 = engine2.generateFreeGameScript(10, 0);
+            const duration2 = performance.now() - start2;
+            
+            const result = `
+                <div class="result-box">
+                    <h4 style="margin-bottom: 15px; color: #667eea;">?–ï? ?§èƒ½å¯¹æ?ç»“æ?</h4>
+                    
+                    <table class="comparison-table">
+                        <tr>
+                            <th>æµ‹è?æ¨¡å?</th>
+                            <th>?»è€—æ—¶</th>
+                            <th>å¹³å?/Spin</th>
+                            <th>BFSè°ƒç”¨</th>
+                            <th>?æŠ½æ¬¡æ•°</th>
+                        </tr>
+                        <tr style="background: ${stats1.redrawCount > 0 ? '#fff3e0' : '#e8f5e9'};">
+                            <td><strong>å½“å??ç½®</strong></td>
+                            <td><strong>${duration1.toFixed(2)} ms</strong></td>
+                            <td>${(duration1/10).toFixed(2)} ms</td>
+                            <td>${stats1.bfsCallCount}</td>
+                            <td>${stats1.redrawCount}</td>
+                        </tr>
+                        <tr style="background: #e8f5e9;">
+                            <td><strong>ç¦ç”¨?æŠ½</strong></td>
+                            <td><strong>${duration2.toFixed(2)} ms</strong></td>
+                            <td>${(duration2/10).toFixed(2)} ms</td>
+                            <td>${stats2.bfsCallCount}</td>
+                            <td>${stats2.redrawCount}</td>
+                        </tr>
+                    </table>
+                    
+                    <div style="margin-top: 20px; padding: 15px; background: #f0f0f0; border-radius: 8px;">
+                        <strong>?? ?§èƒ½å·®å??†æ?ï¼?/strong><br>
+                        ${stats1.redrawCount > 0 
+                            ? `<span style="color: #f57c00;">? ï? å½“å??ç½®å­˜åœ¨?æŠ½ï¼?{stats1.redrawCount}æ¬¡ï?ï¼Œå¯¼?´æ€§èƒ½ä¸‹é? ${((duration1/duration2 - 1) * 100).toFixed(1)}%</span>`
+                            : `<span style="color: #388e3c;">??å½“å??ç½®? é??½ï??§èƒ½?€ä¼?/span>`
+                        }<br>
+                        ?æŠ½å¼€?€ï¼?{Math.max(0, duration1 - duration2).toFixed(2)} ms
+                        ${duration1 > duration2 * 1.2 ? '<br><span style="color: #d32f2f;">? ï? å»ºè®®ï¼šé?ä½é??½ç??ç½®ä»¥æ??‡æ€§èƒ½</span>' : ''}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('compareResult').innerHTML = result;
+            addLog(`??å¯¹æ?æµ‹è?å®Œæ?ï¼šå??é?ç½?${duration1.toFixed(2)}ms vs ? é???${duration2.toFixed(2)}ms`, 'success');
+        }
+        
+        // ?å???
+        addLog('?® ?§èƒ½æµ‹è?å·¥å…·å·²å°±ç»?, 'success');
+        addLog('?’¡ ?ç¤ºï¼šæ??‰æ?è¯•ä½¿??performance.now() è¿›è?ç²¾ç¡®è®¡æ—¶', 'info');
+    </script>
+</body>
+</html>

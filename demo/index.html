@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>瘋狂果醬罐 - Slot Demo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <h1>瘋狂果醬罐</h1>
+        
+        <div class="main-layout">
+            <!-- 左側：遊戲畫面 -->
+            <div class="game-board-section">
+                <div class="info-panel">
+                    <div class="info-item">
+                        <span>金額:</span>
+                        <span id="balance">100000</span>
+                    </div>
+                    <div class="info-item">
+                        <span>本次得分:</span>
+                        <span id="score">0</span>
+                    </div>
+                    <div class="info-item">
+                        <span>Wild倍數:</span>
+                        <span id="wild-mult">1x</span>
+                    </div>
+                    <div class="info-item">
+                        <span>Mega等級:</span>
+                        <span id="mega-level">0</span>
+                    </div>
+                    <div class="info-item">
+                        <span>Mega計數:</span>
+                        <span id="mega-count">0</span>
+                    </div>
+                    <div class="info-item freegame-info" id="freeGameInfo" style="display: none;">
+                        <span>🎰 FreeGame:</span>
+                        <span id="freegame-spins">0/10</span>
+                    </div>
+                </div>
+
+                <div class="board-container" id="boardContainer">
+                    <!-- 六角網格布局 [4, 5, 6, 7, 6, 5, 4] -->
+                    <div id="hexGrid" class="hex-grid"></div>
+                </div>
+            </div>
+            
+            <!-- 右側：控制面板 -->
+            <div class="control-panel">
+                <button id="spinBtn" class="btn-spin">旋轉 SPIN (-100)</button>
+                <button id="autoSpinBtn" class="btn-auto-spin">自動旋轉</button>
+                <button id="stopAutoBtn" class="btn-stop-auto" style="display: none;">停止自動</button>
+                <button id="buyFeatureBtn" class="btn-buy-feature">Buy Feature (-10000)</button>
+                <button id="speedToggleBtn" class="btn-speed-toggle">动画速度: 1x</button>
+                
+                <!-- 統計信息 -->
+                <div class="stats-panel">
+                    <div class="stat-item">
+                        <span class="stat-label">RTP:</span>
+                        <span id="rtp-value" class="stat-value">0.00%</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Spin數:</span>
+                        <span id="spin-count" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Hits:</span>
+                        <span id="hits-value" class="stat-value">0 (0.0%)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="engine.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
