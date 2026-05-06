@@ -183,10 +183,14 @@ async function initGame() {
     
     // 5. ✅ 初始化 Auto Spin 按鈕狀態
     updateAutoSpinButtons();
-    
+
     // 6. ✅ 初始化速度按钮状态
     updateSpeedButton();
-    
+
+    // 7. ✅ 初始化 Grid 縮放並監聽視窗大小變化
+    scaleHexGrid();
+    window.addEventListener('resize', scaleHexGrid);
+
     console.log('✅ 游戏初始化完成！');
     
     if (FAST_MODE) {
@@ -1280,6 +1284,29 @@ function updateAutoSpinButtons() {
 }
 
 // =============== 工具函數 ===============
+
+// 動態縮放 hex-grid 以適應容器大小
+function scaleHexGrid() {
+    const container = document.getElementById('boardContainer');
+    const hexGrid = document.getElementById('hexGrid');
+
+    if (!container || !hexGrid) return;
+
+    const containerWidth = container.clientWidth - 40;  // 扣除 padding
+    const containerHeight = container.clientHeight - 60;
+
+    // 設計尺寸
+    const designWidth = 600;
+    const designHeight = 600;
+
+    // 計算縮放比例（取較小值以完整顯示）
+    const scale = Math.min(containerWidth / designWidth, containerHeight / designHeight, 1);
+
+    hexGrid.style.transform = `scale(${scale})`;
+    hexGrid.style.transformOrigin = 'center center';
+
+    console.log(`📐 Grid scale: ${scale.toFixed(3)} (container: ${containerWidth}x${containerHeight})`);
+}
 
 // 調試日誌
 // 調試日誌（默認關閉詳細日誌，只顯示關鍵信息）

@@ -403,29 +403,22 @@ body.free-game-mode .stat-value {
 
 @media (max-width: 768px) {
     .hex-grid {
-        width: 400px;
-        height: 400px;
-        transform: scale(0.8);
+        /* 縮放由 JavaScript scaleHexGrid() 動態處理 */
     }
-    
-    .hex-cell {
-        width: 60px;
-        height: 68px;
-    }
-    
+
     .info-panel {
         flex-wrap: wrap;
     }
-    
+
     .control-panel {
         flex-direction: column;
     }
-    
+
     button {
         width: 100%;
     }
-    
+
     .board-container {
-        min-height: 500px;
+        min-height: 400px;
     }
 }
