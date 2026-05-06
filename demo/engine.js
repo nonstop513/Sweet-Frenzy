@@ -17,7 +17,8 @@ class GameEngine {
             [3, 5, 7, 9]               // Row 6: 4個
         ];
         // Retrigger規則: C1數量 -> 額外spin數
-        this.retriggerMap = {3: 10, 4: 12, 5: 15, 6: 20, 7: 30};
+        // [3,4,5,6,7] -> [8,10,15,20,30]
+        this.retriggerMap = {3: 8, 4: 10, 5: 15, 6: 20, 7: 30};
         // 符號名稱映射
         this.symbolNames = {
             0: 'WILD', 1: 'C1', 2: 'M1', 3: 'M2', 4: 'M3',
