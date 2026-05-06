@@ -1488,7 +1488,8 @@ def freegame(initial_spins, rounds):
         print("编译完成，开始Free Game模拟...\n")
     
     # Retrigger规则: C1数量 -> 额外spin数
-    retrigger_map = {3: 10, 4: 12, 5: 15, 6: 20, 7: 30}
+    # [3,4,5,6,7] -> [8,10,15,20,30]
+    retrigger_map = {3: 8, 4: 10, 5: 15, 6: 20, 7: 30}
     
     for round_idx in range(rounds):
         # 创建Free Game实例
