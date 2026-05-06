@@ -102,6 +102,8 @@ async function preloadImages() {
 // ============================================
 // 遊戲狀態
 // ============================================
+const BET = 100;  // 下注金額
+
 const gameState = {
     grid: [],
     rowSizes: [4, 5, 6, 7, 6, 5, 4],
@@ -607,7 +609,10 @@ async function onSpin() {
     
     gameState.currentScript = gameState.engine.generateSpinScript(
         spinStartMegaLevel,
-        spinStartMegaCount
+        spinStartMegaCount,
+        false,  // isFreeGame
+        0,      // startWildCount
+        BET     // bet = 100
     );
     
     logDebug(`腳本生成完成: Reel Set ${gameState.currentScript.reelSet}`);
@@ -724,7 +729,7 @@ async function startFreeGame(initialSpins) {
     logDebug(`起始Wild倍數: 0 (從1開始重新累積)`);
     
     // 生成完整的FreeGame腳本
-    gameState.freeGameScript = gameState.engine.generateFreeGameScript(initialSpins, 0);
+    gameState.freeGameScript = gameState.engine.generateFreeGameScript(initialSpins, 0, BET);
     gameState.freeGameSpinIndex = 0;
     
     // ✅ 顯示整場FreeGame的重抽次數
