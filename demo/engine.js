@@ -588,8 +588,11 @@ class GameEngine {
                 cells: boardCells  // ✅ 保存所有4個格子的board索引
             });
             
-            // ✅ 放置4格鑽石到board（因為已避开Wild，所以直接覆蓋）
+            // ✅ 放置4格鑽石到board（跳過C1，保持C1不變）
             for (const [r, c] of boardCells) {
+                if (board[r][c] === 1) {  // C1符號跳過，保持不變
+                    continue;
+                }
                 board[r][c] = megaSymbolId;
                 occupiedCells.add(`${r},${c}`);
             }
@@ -598,7 +601,7 @@ class GameEngine {
         }
         
         this.log(`成功放置: ${placedBlocks}/${megaEliminateCount}個鑽石`);
-        this.log(`放置條件: 1)不互相覆蓋 2)完全避开Wild`);
+        this.log(`放置條件: 1)不互相覆蓋 2)避開Wild 3)保留C1`);
         
         return placedBlocks > 0 ? { 
             symbol: megaSymbolId, 
