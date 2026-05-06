@@ -292,6 +292,9 @@ class GameEngine {
             myTargets = this.convertMySymbols(board, myWeights);
         }
 
+        // 確保每行最多1個C1
+        this.fixC1(board);
+
         return { board, reelInfo, myTargets };
     }
 
@@ -388,7 +391,10 @@ class GameEngine {
         if (dropMyWeights && dropMyWeights.length > 0) {
             dropMyTargets = this.convertMySymbols(board, dropMyWeights);
         }
-        
+
+        // 確保每行最多1個C1
+        this.fixC1(board);
+
         return { dropInfo, dropMyTargets };
     }
 
@@ -460,7 +466,23 @@ class GameEngine {
         
         return myTargets; // 返回轉換映射 [MY1目標, MY2目標, MY3目標]
     }
-    
+
+    // 確保每行最多1個C1，多餘的轉換為M7
+    fixC1(board) {
+        for (let row = 0; row < 7; row++) {
+            let c1Count = 0;
+            for (let col = 0; col < this.rowSizes[row]; col++) {
+                if (board[row][col] === 1) {
+                    if (c1Count > 0) {
+                        board[row][col] = 8; // 轉換為M7
+                        this.log(`Row ${row} 多餘C1 at col ${col} 轉換為M7`);
+                    }
+                    c1Count++;
+                }
+            }
+        }
+    }
+
     // ==================== Mega符號放置 ====================
     
     placeMegaSymbols(board, megaEliminateCount) {

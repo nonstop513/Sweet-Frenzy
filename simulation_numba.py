@@ -376,7 +376,10 @@ def convert_my_numba_with_targets(board, my_targets):
 
 @jit(nopython=True, cache=True)
 def fix_c1_numba(board):
-    """确保每行最多1个C1（六角网格版本）"""
+    """确保每行最多1个C1（六角网格版本）
+
+    多余的C1转换为M7(8)，而非MY1，避免需要再次MY转换
+    """
     rows, cols = board.shape
     for row in range(rows):
         c1_count = 0
@@ -385,7 +388,7 @@ def fix_c1_numba(board):
             col = index_to_col(row, index)
             if board[row, col] == 1:
                 if c1_count > 0:
-                    board[row, col] = 9
+                    board[row, col] = 8  # 转换为M7
                 c1_count += 1
 
 @jit(nopython=True, cache=True)
