@@ -992,12 +992,12 @@ class GameEngine {
                             megaEliminateCount: script.megaEliminateCount  // 記錄放置前的count
                         };
                         
-                        // 重置mega狀態並繼續循環
+                        // 重置mega_eliminate_count，但保留mega_level繼續累積
                         script.megaEliminateCount = 0;
-                        script.megaLevel = 0;
-                        
+                        // mega_level 保留不重置
+
                         // 更新cascade中的mega狀態為重置後的值
-                        megaCascade.megaLevelAfterPlacement = 0;
+                        megaCascade.megaLevelAfterPlacement = script.megaLevel;
                         megaCascade.megaEliminateCountAfterPlacement = 0;
                         
                         script.cascades.push(megaCascade);

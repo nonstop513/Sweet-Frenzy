@@ -1049,10 +1049,10 @@ async function performMegaPlacement(megaCascade) {
         }
     }
     
-    // 更新Mega狀態（重置為0）
-    gameState.megaLevel = 0;
-    gameState.megaEliminateCount = 0;
-    logDebug(`Mega放置後狀態重置: Level=0, Count=0`);
+    // 更新Mega狀態（從cascade獲取正確值，mega_level保留不重置）
+    gameState.megaLevel = megaCascade.megaLevelAfterPlacement;
+    gameState.megaEliminateCount = megaCascade.megaEliminateCountAfterPlacement;
+    logDebug(`Mega放置後狀態: Level=${gameState.megaLevel}, Count=${gameState.megaEliminateCount}`);
     
     updateUI();
     

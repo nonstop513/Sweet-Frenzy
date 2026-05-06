@@ -1287,16 +1287,16 @@ class Game7x7:
             raise MegaPlacementImpossibleError(
                 f"无法放置所有mega符号！需要放置{num_blocks}个，只成功放置了{placed_blocks}个。"
             )
-        
+
         if placed_blocks > 0:
             self.eliminate_success_count += 1
             self.mega_eliminate_count = 0  # 成功放置后重置，可以重新累积
-            self.mega_level = 0  # 同时重置mega等级
+            # mega_level 保留不重置，继续累积
         else:
             self.eliminate_fail_count += 1
             self.mega_eliminate_count = 0  # 失败也清空计数
-            self.mega_level = 0
-        
+            # mega_level 保留不重置
+
         return placed_blocks > 0
 
 # ==================== 主函数 ====================
