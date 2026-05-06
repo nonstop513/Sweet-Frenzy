@@ -1577,3 +1577,40 @@ def freegame(initial_spins, rounds):
     
     return total_scores, total_spins, wild_multipliers
 # %%
+import numpy as np
+
+bounds = np.array([
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+    15, 20, 25, 30, 35, 40, 45, 50,
+    60, 70, 80, 90, 100, 120, 140, 160, 180, 200,
+    250, 300, 350, 400, 450, 500, 550, 600, 650, 700,
+    750, 800, 850, 900, 950, 1000,
+    2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000,
+    15000, 20000, 25000
+])
+
+x = a[0] / 100
+
+# 只統計 a[1] < 3 的資料進倍數區間
+mask = a[1] < 3
+
+# idx 會是 0 ~ 57，剛好對應 58 個區間
+idx = np.searchsorted(bounds, x[mask], side='left')
+
+# 統計 58 個倍數區間的數量
+count_58 = np.bincount(idx, minlength=len(bounds) + 1)
+
+# 第 59 個數字：a[1] >= 3 的數量
+count_special = np.sum(a[1] >= 3)
+
+# 合併成長度 59 的向量
+result = np.append(count_58, count_special)
+
+x_b = b[0] / 100
+
+# idx 會是 0 ~ 57，對應 58 個區間
+idx_b = np.searchsorted(bounds, x_b, side='left')
+
+# 回傳長度 58 的數量向量
+b_count_58 = np.bincount(idx_b, minlength=len(bounds) + 1)
+# %%

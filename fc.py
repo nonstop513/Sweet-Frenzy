@@ -166,7 +166,7 @@ output.update(extract_range(sht6, 'GK19:GK20', 'FreeGameDropmethod6'))
 output.update(extract_range(sht6, 'GO19:GQ27', 'FreeGameDropMy6'))
 
 sht7 = wb.sheets['工作表1']
-output.update(extract_range(sht7, 'B1:B58', 'baseredraw'))
+output.update(extract_range(sht7, 'B1:B59', 'baseredraw'))
 output.update(extract_range(sht7, 'C1:C58', 'freeredraw'))
 output.update(extract_range(sht7, 'A1:A57', 'multipleRange'))
 
