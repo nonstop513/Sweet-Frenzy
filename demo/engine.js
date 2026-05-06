@@ -102,27 +102,42 @@ class GameEngine {
      * @param {number} totalScore - 總分數
      * @param {number} bet - 下注金額（默認1）
      * @param {boolean} isFreeGame - 是否為FreeGame
+     * @param {number} c1Count - 結束時盤面C1數量（BaseGame用）
      * @returns {boolean} 是否需要重抽
      */
-    shouldRedraw(totalScore, bet = 1, isFreeGame = false) {
+    shouldRedraw(totalScore, bet = 1, isFreeGame = false, c1Count = 0) {
         const multiple = totalScore / bet;
-        const rangeIndex = this.getMultipleRangeIndex(multiple);
-        
-        if (rangeIndex === -1) return false;
-        
+
         // 選擇對應的重抽率向量
         const redrawRates = isFreeGame ? this.data.freeredraw : this.data.baseredraw;
-        
-        if (!redrawRates || rangeIndex >= redrawRates.length) {
-            console.warn(`警告：重抽率索引越界 (index=${rangeIndex}, length=${redrawRates?.length})`);
+
+        if (!redrawRates || redrawRates.length === 0) {
+            console.warn('警告：重抽率向量未定義');
             return false;
         }
-        
-        const redrawRate = redrawRates[rangeIndex];
+
+        let redrawIndex;
+
+        // BaseGame: C1 >= 3 時使用第59個重抽率（index 58），無視倍數
+        if (!isFreeGame && c1Count >= 3) {
+            redrawIndex = 58;  // 第59個值
+            this.log(`C1數量=${c1Count} >= 3，使用第59個重抽率 (index=58)`);
+        } else {
+            // 正常根據倍數查找區間
+            redrawIndex = this.getMultipleRangeIndex(multiple);
+            if (redrawIndex === -1) return false;
+        }
+
+        if (redrawIndex >= redrawRates.length) {
+            console.warn(`警告：重抽率索引越界 (index=${redrawIndex}, length=${redrawRates.length})`);
+            return false;
+        }
+
+        const redrawRate = redrawRates[redrawIndex];
         const randomValue = Math.random();
-        
-        this.log(`倍數: ${multiple.toFixed(2)}x (分數${totalScore}/bet${bet}), 區間索引: ${rangeIndex}, 重抽率: ${(redrawRate * 100).toFixed(1)}%, 隨機值: ${randomValue.toFixed(3)}`);
-        
+
+        this.log(`倍數: ${multiple.toFixed(2)}x, C1數量: ${c1Count}, 區間索引: ${redrawIndex}, 重抽率: ${(redrawRate * 100).toFixed(1)}%, 隨機值: ${randomValue.toFixed(3)}`);
+
         return randomValue < redrawRate;
     }
     
@@ -880,15 +895,27 @@ class GameEngine {
         // 重抽循環
         while (attempts < maxRedrawAttempts) {
             attempts++;
-            
+
             script = this._generateSingleSpin(currentMegaLevel, currentMegaEliminateCount, isFreeGame, startWildCount);
-            
-            // 檢查是否需要重抽
-            if (enableRedraw && this.shouldRedraw(script.totalScore, bet, isFreeGame)) {
-                this.log(`🔄 重抽觸發！(第${attempts}次嘗試，倍數${(script.totalScore / bet).toFixed(2)}x)`);
+
+            // 獲取最終盤面並計算C1數量（用於BaseGame重抽判斷）
+            let finalBoard = script.initialBoard;
+            if (script.cascades && script.cascades.length > 0) {
+                const lastCascade = script.cascades[script.cascades.length - 1];
+                if (lastCascade.boardAfterFill) {
+                    finalBoard = lastCascade.boardAfterFill;
+                } else if (lastCascade.boardAfterMega) {
+                    finalBoard = lastCascade.boardAfterMega;
+                }
+            }
+            const c1Count = this.countC1(finalBoard);
+
+            // 檢查是否需要重抽（BaseGame時傳入C1數量）
+            if (enableRedraw && this.shouldRedraw(script.totalScore, bet, isFreeGame, c1Count)) {
+                this.log(`🔄 重抽觸發！(第${attempts}次嘗試，倍數${(script.totalScore / bet).toFixed(2)}x, C1=${c1Count})`);
                 continue;  // 重新生成
             }
-            
+
             // 不需要重抽，跳出循環
             break;
         }
