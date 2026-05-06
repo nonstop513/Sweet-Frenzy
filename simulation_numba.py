@@ -301,15 +301,54 @@ def bfs_find_connected(board, start_row, start_col, visited):
     return result[:result_size]
 
 @jit(nopython=True, cache=True)
+def select_my_targets_numba(my_weights):
+    """按顺序抽选MY1→MY2→MY3目标符号，确保三种MY各不相同
+
+    - MY1: 从完整权重抽选
+    - MY2: 将MY1目标权重设为0后抽选（不与MY1重复）
+    - MY3: 将MY1、MY2目标权重都设为0后抽选（不与MY1、MY2重复）
+    """
+    num_my = min(3, len(my_weights))
+    my_targets = np.full(3, -1, dtype=np.int32)
+
+    for my_idx in range(num_my):
+        # 复制当前MY的权重，避免修改原始数据
+        current_weights = my_weights[my_idx].copy()
+
+        # 将之前已选中符号的权重设为0
+        for prev_idx in range(my_idx):
+            prev_symbol = my_targets[prev_idx]
+            if 0 <= prev_symbol < len(current_weights):
+                current_weights[prev_symbol] = 0
+
+        # 从剩余权重中抽选
+        total = np.sum(current_weights)
+        if total > 0:
+            my_targets[my_idx] = weighted_choice_numba(current_weights)
+        else:
+            # fallback：找一个未使用的符号
+            for s in range(len(current_weights)):
+                already_used = False
+                for prev_idx in range(my_idx):
+                    if my_targets[prev_idx] == s:
+                        already_used = True
+                        break
+                if not already_used:
+                    my_targets[my_idx] = s
+                    break
+
+    return my_targets
+
+@jit(nopython=True, cache=True)
 def convert_my_numba(board, my_weights):
-    """转换MY符号(9,10,11)为0-8，同类MY转换成相同符号（六角网格版本）"""
+    """转换MY符号(9,10,11)为不同符号（六角网格版本）
+
+    按顺序抽选MY1→MY2→MY3，确保三种MY各不相同
+    """
     rows, cols = board.shape
-    
-    # 预先为每种MY符号选择一个目标符号
-    my_targets = np.zeros(3, dtype=np.int32)  # MY1, MY2, MY3
-    for my_idx in range(min(3, len(my_weights))):
-        my_targets[my_idx] = weighted_choice_numba(my_weights[my_idx])
-    
+
+    my_targets = select_my_targets_numba(my_weights)
+
     # 统一转换所有MY符号（按行内索引顺序处理）
     for row in range(rows):
         row_size = get_row_size(row)
@@ -318,7 +357,7 @@ def convert_my_numba(board, my_weights):
             symbol = board[row, col]
             if 9 <= symbol <= 11:
                 my_idx = symbol - 9
-                if my_idx < len(my_weights):
+                if my_idx < len(my_weights) and my_targets[my_idx] >= 0:
                     board[row, col] = my_targets[my_idx]
 
 @jit(nopython=True, cache=True)
@@ -1001,11 +1040,9 @@ class Game7x7:
                 fill_empty_method1_numba(self.board, self.fixed_mask,
                                         self.drop_symbol_table, position_idx)
             
-            # 本次填充：为每种MY符号选择一个统一的转换目标
+            # 本次填充：按顺序抽选MY目标（MY1→MY2→MY3各不相同）
             if self.drop_my_weights is not None and len(self.drop_my_weights) > 0:
-                my_targets = np.zeros(3, dtype=np.int32)
-                for my_idx in range(min(3, len(self.drop_my_weights))):
-                    my_targets[my_idx] = weighted_choice_numba(self.drop_my_weights[my_idx])
+                my_targets = select_my_targets_numba(self.drop_my_weights)
                 convert_my_numba_with_targets(self.board, my_targets)
             
             fix_c1_numba(self.board)
