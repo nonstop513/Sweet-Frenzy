@@ -693,14 +693,16 @@ async function onSpin() {
 async function checkAndTriggerFreeGame() {
     gameState.isAnimating = true;  // 防止在FreeGame啟動期間再次點擊
     
-    // 獲取最終盤面（最後一個cascade的fill後盤面）
+    // 獲取最終盤面（最後一個cascade的fill後或mega後盤面）
     let finalBoard = gameState.currentScript.initialBoard;
     if (gameState.currentScript.cascades && gameState.currentScript.cascades.length > 0) {
         const lastCascade = gameState.currentScript.cascades[gameState.currentScript.cascades.length - 1];
         if (lastCascade.boardAfterFill) {
             finalBoard = lastCascade.boardAfterFill;
+        } else if (lastCascade.boardAfterMega) {
+            finalBoard = lastCascade.boardAfterMega;
         } else {
-            console.warn('警告：lastCascade.boardAfterFill 不存在，使用 initialBoard');
+            console.warn('警告：lastCascade 沒有 boardAfterFill 或 boardAfterMega，使用 initialBoard');
         }
     }
     
