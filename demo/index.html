@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>瘋狂果醬罐 - Slot Demo</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="game-container">
         <h1>瘋狂果醬罐</h1>
-        
+
         <div class="main-layout">
             <!-- 左側：遊戲畫面 -->
             <div class="game-board-section">
@@ -45,7 +46,7 @@
                     <div id="hexGrid" class="hex-grid"></div>
                 </div>
             </div>
-            
+
             <!-- 右側：控制面板 -->
             <div class="control-panel">
                 <button id="spinBtn" class="btn-spin">旋轉 SPIN (-100)</button>
@@ -53,7 +54,8 @@
                 <button id="stopAutoBtn" class="btn-stop-auto" style="display: none;">停止自動</button>
                 <button id="buyFeatureBtn" class="btn-buy-feature">Buy Feature (-10000)</button>
                 <button id="speedToggleBtn" class="btn-speed-toggle">动画速度: 1x</button>
-                
+                <button id="weightChartBtn" class="btn-weight-chart">倍率權重調整</button>
+
                 <!-- 統計信息 -->
                 <div class="stats-panel">
                     <div class="stat-item">
@@ -73,8 +75,35 @@
         </div>
     </div>
 
+    <!-- 倍率權重調整彈窗 -->
+    <div id="weightModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>倍率權重分析</h2>
+                <span class="modal-close" id="closeModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="chart-container">
+                    <h3>BaseGame 倍率權重</h3>
+                    <canvas id="baseGameChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>FreeGame 倍率權重</h3>
+                    <canvas id="freeGameChart"></canvas>
+                </div>
+                <div class="cycle-info">
+                    <h3>FreeGame 週期</h3>
+                    <p>原始觸發機率: <span id="originalTriggerProb">-</span></p>
+                    <p>重轉後觸發機率: <span id="adjustedTriggerProb">-</span></p>
+                    <p>FreeGame 週期: <span id="freeGameCycle">-</span> 次 Spin</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="data.js"></script>
     <script src="engine.js"></script>
     <script src="game.js"></script>
+    <script src="weight-chart.js"></script>
 </body>
 </html>
