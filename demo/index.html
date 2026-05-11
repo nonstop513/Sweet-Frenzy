@@ -83,19 +83,32 @@
                 <span class="modal-close" id="closeModal">&times;</span>
             </div>
             <div class="modal-body">
+                <div class="edit-instructions">
+                    <p>點擊圖表上的<span class="highlight">重轉率</span>數據點可調整該倍數區間的重轉率</p>
+                    <p>點擊圖例可切換顯示/隱藏</p>
+                </div>
+
                 <div class="chart-container">
-                    <h3>BaseGame 倍率權重</h3>
+                    <h3>BaseGame 倍率權重 (顯示至2000倍)</h3>
                     <canvas id="baseGameChart"></canvas>
                 </div>
                 <div class="chart-container">
-                    <h3>FreeGame 倍率權重</h3>
+                    <h3>FreeGame 倍率權重 (顯示至2000倍)</h3>
                     <canvas id="freeGameChart"></canvas>
                 </div>
+
                 <div class="cycle-info">
                     <h3>FreeGame 週期</h3>
                     <p>原始觸發機率: <span id="originalTriggerProb">-</span></p>
                     <p>重轉後觸發機率: <span id="adjustedTriggerProb">-</span></p>
                     <p>FreeGame 週期: <span id="freeGameCycle">-</span> 次 Spin</p>
+
+                    <div class="cycle-adjust">
+                        <label>目標週期:</label>
+                        <input type="number" id="targetCycleInput" placeholder="例: 150" min="1" step="1">
+                        <button id="adjustCycleBtn" class="btn-adjust">套用週期</button>
+                        <button id="resetRedrawBtn" class="btn-reset">重置</button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -528,3 +528,86 @@ body.free-game-mode .stat-value {
     color: #00cec9;
     font-weight: bold;
 }
+
+/* 編輯說明 */
+.edit-instructions {
+    background: rgba(116, 185, 255, 0.1);
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    border-left: 3px solid #74b9ff;
+}
+
+.edit-instructions p {
+    margin: 5px 0;
+    color: #dfe6e9;
+    font-size: 0.9em;
+}
+
+.edit-instructions .highlight {
+    color: #ffeaa7;
+    font-weight: bold;
+}
+
+/* 週期調整區 */
+.cycle-adjust {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255,215,0,0.2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.cycle-adjust label {
+    color: #fff;
+    font-weight: bold;
+}
+
+.cycle-adjust input {
+    padding: 8px 12px;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 5px;
+    background: rgba(0,0,0,0.3);
+    color: #fff;
+    width: 120px;
+    font-size: 1em;
+}
+
+.cycle-adjust input:focus {
+    outline: none;
+    border-color: #74b9ff;
+}
+
+.btn-adjust {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.btn-adjust:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.btn-reset {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #636e72 0%, #b2bec3 100%);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.btn-reset:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
