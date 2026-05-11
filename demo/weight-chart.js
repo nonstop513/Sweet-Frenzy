@@ -24,8 +24,36 @@ let editMode = 'drag';
 // 拖拉狀態
 let isDragging = false;
 let dragChart = null;
+let dragCanvas = null;
 let dragIndex = -1;
 let dragChartType = null;
+
+// 全局滑鼠事件處理（確保拖拉不會中斷）
+document.addEventListener('mousemove', function(e) {
+    if (!isDragging || !dragChart || !dragCanvas) return;
+
+    const rect = dragCanvas.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+
+    // 計算Y軸值
+    const yAxis = dragChart.scales.y;
+    const yValue = yAxis.getValueForPixel(y);
+
+    // 允許在合理範圍內調整
+    const clampedValue = Math.max(0, Math.min(yAxis.max || 0.5, yValue));
+    updateTargetWeight(dragChartType, dragIndex, clampedValue);
+});
+
+document.addEventListener('mouseup', function() {
+    if (isDragging) {
+        isDragging = false;
+        if (dragCanvas) dragCanvas.style.cursor = 'default';
+        dragChart = null;
+        dragCanvas = null;
+        dragIndex = -1;
+        dragChartType = null;
+    }
+});
 
 // 計算重轉後的權重
 function calculateAdjustedWeights(originalWeights, redrawRates) {
@@ -224,7 +252,7 @@ function createInteractiveChart(canvasId, labels, originalData, adjustedData, re
     return chart;
 }
 
-// 綁定拖拉事件
+// 綁定拖拉事件（只處理 mousedown）
 function bindDragEvents(canvas, chart, chartType) {
     canvas.addEventListener('mousedown', function(e) {
         if (editMode !== 'drag') return;
@@ -233,44 +261,11 @@ function bindDragEvents(canvas, chart, chartType) {
         if (points.length > 0 && points[0].datasetIndex === 1) {
             isDragging = true;
             dragChart = chart;
+            dragCanvas = canvas;
             dragIndex = points[0].index;
             dragChartType = chartType;
             canvas.style.cursor = 'grabbing';
-        }
-    });
-
-    canvas.addEventListener('mousemove', function(e) {
-        if (!isDragging || dragChart !== chart) return;
-
-        const rect = canvas.getBoundingClientRect();
-        const y = e.clientY - rect.top;
-
-        // 計算Y軸值
-        const yAxis = chart.scales.y;
-        const yValue = yAxis.getValueForPixel(y);
-
-        if (yValue >= 0 && yValue <= (yAxis.max || 1)) {
-            updateTargetWeight(dragChartType, dragIndex, yValue);
-        }
-    });
-
-    canvas.addEventListener('mouseup', function() {
-        if (isDragging) {
-            isDragging = false;
-            dragChart = null;
-            dragIndex = -1;
-            dragChartType = null;
-            canvas.style.cursor = 'default';
-        }
-    });
-
-    canvas.addEventListener('mouseleave', function() {
-        if (isDragging) {
-            isDragging = false;
-            dragChart = null;
-            dragIndex = -1;
-            dragChartType = null;
-            canvas.style.cursor = 'default';
+            e.preventDefault(); // 防止選取文字
         }
     });
 }
