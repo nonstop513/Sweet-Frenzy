@@ -690,3 +690,126 @@ body.free-game-mode .stat-value {
     color: #81ecec;
     font-style: italic;
 }
+
+.rtp-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 20px;
+    margin-top: 10px;
+}
+
+.rtp-summary p {
+    margin: 0;
+}
+
+.rtp-summary .total-rtp {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #ffd700;
+    background: rgba(255, 215, 0, 0.15);
+    padding: 5px 12px;
+    border-radius: 5px;
+}
+
+.rtp-summary .total-rtp span {
+    color: #00ff88;
+    font-size: 1.2em;
+}
+
+/* Mobile 響應式設計 */
+@media (max-width: 600px) {
+    .modal-content {
+        width: 98%;
+        max-height: 95vh;
+        border-radius: 10px;
+    }
+
+    .modal-header {
+        padding: 12px 15px;
+    }
+
+    .modal-header h2 {
+        font-size: 1.2em;
+    }
+
+    .modal-body {
+        padding: 10px;
+    }
+
+    .edit-controls {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .edit-controls > * {
+        width: 100%;
+    }
+
+    .edit-controls input {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .chart-container {
+        padding: 10px;
+    }
+
+    .chart-container h3 {
+        flex-direction: column;
+        align-items: flex-start;
+        font-size: 1em;
+    }
+
+    .stats-inline {
+        font-size: 0.8em;
+        width: 100%;
+        text-align: center;
+    }
+
+    .chart-container canvas {
+        max-height: 200px;
+    }
+
+    .cycle-info {
+        padding: 10px;
+    }
+
+    .cycle-adjust {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .cycle-adjust input {
+        width: 100%;
+    }
+
+    .cycle-adjust button {
+        width: 100%;
+        margin-top: 5px;
+    }
+
+    .rtp-summary {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
+
+/* 橫向手機 */
+@media (max-height: 500px) and (orientation: landscape) {
+    .modal-content {
+        max-height: 98vh;
+    }
+
+    .chart-container canvas {
+        max-height: 150px;
+    }
+
+    .modal-header {
+        padding: 8px 15px;
+    }
+
+    .modal-body {
+        padding: 8px;
+    }
+}
