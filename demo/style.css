@@ -669,3 +669,10 @@ body.free-game-mode .stat-value {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
+
+.cycle-info .note {
+    margin-top: 10px;
+    font-size: 0.85em;
+    color: #81ecec;
+    font-style: italic;
+}
