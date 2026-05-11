@@ -1,6 +1,7 @@
 /**
  * 倍率權重分析圖表
  * 直接調整目標權重，自動反推重轉率
+ * 支援輸入模式和拖拉模式
  */
 
 let baseGameChart = null;
@@ -10,8 +11,21 @@ let freeGameChart = null;
 let workingBaseredraw = [];
 let workingFreeredraw = [];
 
+// 原始值備份
+let originalBaseredraw = [];
+let originalFreeredraw = [];
+
 // 顯示範圍限制（到2000倍）
 const DISPLAY_LIMIT = 47;
+
+// 編輯模式: 'input' 或 'drag'
+let editMode = 'drag';
+
+// 拖拉狀態
+let isDragging = false;
+let dragChart = null;
+let dragIndex = -1;
+let dragChartType = null;
 
 // 計算重轉後的權重
 function calculateAdjustedWeights(originalWeights, redrawRates) {
@@ -34,18 +48,14 @@ function calculateAdjustedWeights(originalWeights, redrawRates) {
     return adjusted;
 }
 
-// 反推重轉率：根據目標權重計算需要的重轉率
-// 公式推導：A[i] = B[i]*(1-R[i]) / Total
-// => R[i] = 1 - (A[i] * S) / (B[i] * (1 - A[i]))
-// 其中 S = Σ(B[j]*(1-R[j])) for j ≠ i
+// 反推重轉率
 function calculateRedrawRateFromTarget(targetWeight, index, originalWeights, currentRedrawRates) {
     const B_i = originalWeights[index];
 
-    if (B_i <= 0) return currentRedrawRates[index]; // 原始權重為0，無法調整
-    if (targetWeight <= 0) return 1; // 目標為0，重轉率100%
-    if (targetWeight >= 1) return 0; // 目標為100%，不可能
+    if (B_i <= 0) return currentRedrawRates[index];
+    if (targetWeight <= 0) return 1;
+    if (targetWeight >= 1) return 0;
 
-    // 計算其他區間的 S = Σ(B[j]*(1-R[j])) for j ≠ index
     let S = 0;
     for (let j = 0; j < originalWeights.length; j++) {
         if (j !== index) {
@@ -54,15 +64,12 @@ function calculateRedrawRateFromTarget(targetWeight, index, originalWeights, cur
         }
     }
 
-    // R[i] = 1 - (A[i] * S) / (B[i] * (1 - A[i]))
     const numerator = targetWeight * S;
     const denominator = B_i * (1 - targetWeight);
 
     if (denominator <= 0) return 0;
 
     const R_i = 1 - (numerator / denominator);
-
-    // 限制在 [0, 1] 範圍
     return Math.max(0, Math.min(1, R_i));
 }
 
@@ -80,12 +87,20 @@ function generateLabels(count, multipleRange, limit) {
     return labels;
 }
 
+// 獲取Y軸最大值
+function getYAxisMax() {
+    const input = document.getElementById('yAxisMaxInput');
+    const value = parseFloat(input?.value);
+    return isNaN(value) || value <= 0 ? null : value / 100; // 轉換為小數
+}
+
 // 創建可互動的圖表
 function createInteractiveChart(canvasId, labels, originalData, adjustedData, redrawData, chartType) {
     const ctx = document.getElementById(canvasId).getContext('2d');
     const displayOriginal = originalData.slice(0, DISPLAY_LIMIT);
     const displayAdjusted = adjustedData.slice(0, DISPLAY_LIMIT);
     const displayRedraw = redrawData.slice(0, DISPLAY_LIMIT);
+    const yMax = getYAxisMax();
 
     const chart = new Chart(ctx, {
         type: 'line',
@@ -109,21 +124,22 @@ function createInteractiveChart(canvasId, labels, originalData, adjustedData, re
                     backgroundColor: 'rgba(54, 162, 235, 0.2)',
                     fill: false,
                     tension: 0.1,
-                    pointRadius: 5,
+                    pointRadius: 6,
                     pointHoverRadius: 10,
                     pointBackgroundColor: 'rgba(54, 162, 235, 1)',
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2
                 },
                 {
-                    label: '重轉率 (自動計算)',
+                    label: '重轉率',
                     data: displayRedraw,
                     borderColor: 'rgba(255, 206, 86, 1)',
                     backgroundColor: 'rgba(255, 206, 86, 0.2)',
                     fill: false,
                     tension: 0.1,
                     pointRadius: 3,
-                    yAxisID: 'y1'
+                    yAxisID: 'y1',
+                    hidden: true  // 預設隱藏
                 }
             ]
         },
@@ -145,7 +161,7 @@ function createInteractiveChart(canvasId, labels, originalData, adjustedData, re
                             if (context.datasetIndex === 2) {
                                 return `${context.dataset.label}: ${(value * 100).toFixed(2)}%`;
                             }
-                            return `${context.dataset.label}: ${(value * 100).toFixed(6)}%`;
+                            return `${context.dataset.label}: ${(value * 100).toFixed(4)}%`;
                         }
                     }
                 }
@@ -162,9 +178,11 @@ function createInteractiveChart(canvasId, labels, originalData, adjustedData, re
                     title: { display: true, text: '權重機率', color: '#fff' },
                     ticks: {
                         color: '#aaa',
-                        callback: (v) => (v * 100).toFixed(2) + '%'
+                        callback: (v) => (v * 100).toFixed(1) + '%'
                     },
-                    grid: { color: 'rgba(255,255,255,0.1)' }
+                    grid: { color: 'rgba(255,255,255,0.1)' },
+                    min: 0,
+                    max: yMax
                 },
                 y1: {
                     type: 'linear',
@@ -180,24 +198,105 @@ function createInteractiveChart(canvasId, labels, originalData, adjustedData, re
                 }
             },
             onClick: function(evt, elements) {
+                if (editMode !== 'input') return;
                 if (elements.length > 0) {
                     const element = elements[0];
-                    const datasetIndex = element.datasetIndex;
-                    const index = element.index;
-
-                    // 只允許編輯目標權重（datasetIndex === 1）
-                    if (datasetIndex === 1) {
-                        showTargetWeightEditDialog(chartType, index);
+                    if (element.datasetIndex === 1) {
+                        showTargetWeightEditDialog(chartType, element.index);
                     }
+                }
+            },
+            onHover: function(evt, elements) {
+                const canvas = evt.native.target;
+                if (editMode === 'drag' && elements.length > 0 && elements[0].datasetIndex === 1) {
+                    canvas.style.cursor = 'ns-resize';
+                } else {
+                    canvas.style.cursor = 'default';
                 }
             }
         }
     });
 
+    // 綁定拖拉事件
+    const canvas = document.getElementById(canvasId);
+    bindDragEvents(canvas, chart, chartType);
+
     return chart;
 }
 
-// 顯示目標權重編輯對話框
+// 綁定拖拉事件
+function bindDragEvents(canvas, chart, chartType) {
+    canvas.addEventListener('mousedown', function(e) {
+        if (editMode !== 'drag') return;
+
+        const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
+        if (points.length > 0 && points[0].datasetIndex === 1) {
+            isDragging = true;
+            dragChart = chart;
+            dragIndex = points[0].index;
+            dragChartType = chartType;
+            canvas.style.cursor = 'grabbing';
+        }
+    });
+
+    canvas.addEventListener('mousemove', function(e) {
+        if (!isDragging || dragChart !== chart) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const y = e.clientY - rect.top;
+
+        // 計算Y軸值
+        const yAxis = chart.scales.y;
+        const yValue = yAxis.getValueForPixel(y);
+
+        if (yValue >= 0 && yValue <= (yAxis.max || 1)) {
+            updateTargetWeight(dragChartType, dragIndex, yValue);
+        }
+    });
+
+    canvas.addEventListener('mouseup', function() {
+        if (isDragging) {
+            isDragging = false;
+            dragChart = null;
+            dragIndex = -1;
+            dragChartType = null;
+            canvas.style.cursor = 'default';
+        }
+    });
+
+    canvas.addEventListener('mouseleave', function() {
+        if (isDragging) {
+            isDragging = false;
+            dragChart = null;
+            dragIndex = -1;
+            dragChartType = null;
+            canvas.style.cursor = 'default';
+        }
+    });
+}
+
+// 更新目標權重（用於拖拉）
+function updateTargetWeight(chartType, index, targetWeight) {
+    const originalWeights = chartType === 'base' ? data.baseredrawB : data.freeredrawB;
+    const redrawRates = chartType === 'base' ? workingBaseredraw : workingFreeredraw;
+
+    const newRedrawRate = calculateRedrawRateFromTarget(
+        targetWeight,
+        index,
+        originalWeights,
+        redrawRates
+    );
+
+    if (chartType === 'base') {
+        workingBaseredraw[index] = newRedrawRate;
+    } else {
+        workingFreeredraw[index] = newRedrawRate;
+    }
+
+    updateChartsWithWorkingData();
+}
+
+// 顯示目標權重編輯對話框（輸入模式）
 function showTargetWeightEditDialog(chartType, index) {
     const multipleRange = data.multipleRange || [];
     const label = index < multipleRange.length ? multipleRange[index] : index;
@@ -216,24 +315,8 @@ function showTargetWeightEditDialog(chartType, index) {
 
     if (newValueStr !== null && !isNaN(parseFloat(newValueStr))) {
         const targetWeight = Math.max(0, Math.min(100, parseFloat(newValueStr))) / 100;
-
-        // 反推重轉率
-        const newRedrawRate = calculateRedrawRateFromTarget(
-            targetWeight,
-            index,
-            originalWeights,
-            redrawRates
-        );
-
-        if (chartType === 'base') {
-            workingBaseredraw[index] = newRedrawRate;
-        } else {
-            workingFreeredraw[index] = newRedrawRate;
-        }
-
-        console.log(`✅ 倍數 ${label}: 目標權重 ${(targetWeight*100).toFixed(4)}% → 重轉率 ${(newRedrawRate*100).toFixed(2)}%`);
-
-        updateChartsWithWorkingData();
+        updateTargetWeight(chartType, index, targetWeight);
+        console.log(`✅ 倍數 ${label}: 目標權重 ${(targetWeight*100).toFixed(4)}%`);
     }
 }
 
@@ -248,13 +331,13 @@ function updateChartsWithWorkingData() {
     if (baseGameChart) {
         baseGameChart.data.datasets[1].data = adjustedBase.slice(0, DISPLAY_LIMIT);
         baseGameChart.data.datasets[2].data = workingBaseredraw.slice(0, DISPLAY_LIMIT);
-        baseGameChart.update();
+        baseGameChart.update('none'); // 無動畫更新，更流暢
     }
 
     if (freeGameChart) {
         freeGameChart.data.datasets[1].data = adjustedFree.slice(0, DISPLAY_LIMIT);
         freeGameChart.data.datasets[2].data = workingFreeredraw.slice(0, DISPLAY_LIMIT);
-        freeGameChart.update();
+        freeGameChart.update('none');
     }
 
     updateCycleDisplay(adjustedBase, adjustedFree);
@@ -288,11 +371,8 @@ function adjustByTargetCycle() {
 
     const baseredrawB = data.baseredrawB || [];
     const lastIndex = baseredrawB.length - 1;
-
-    // 目標觸發機率 = 1 / 目標週期
     const targetProb = 1 / targetCycle;
 
-    // 使用反推公式計算所需的重轉率
     const newRedrawRate = calculateRedrawRateFromTarget(
         targetProb,
         lastIndex,
@@ -307,8 +387,39 @@ function adjustByTargetCycle() {
 
     workingBaseredraw[lastIndex] = newRedrawRate;
     updateChartsWithWorkingData();
-
     console.log(`✅ 目標週期 ${targetCycle} → 重轉率 ${(newRedrawRate * 100).toFixed(2)}%`);
+}
+
+// 更新Y軸範圍
+function updateYAxisScale() {
+    const yMax = getYAxisMax();
+
+    if (baseGameChart) {
+        baseGameChart.options.scales.y.max = yMax;
+        baseGameChart.update();
+    }
+    if (freeGameChart) {
+        freeGameChart.options.scales.y.max = yMax;
+        freeGameChart.update();
+    }
+}
+
+// 切換編輯模式
+function toggleEditMode() {
+    editMode = editMode === 'input' ? 'drag' : 'input';
+    updateModeDisplay();
+}
+
+function updateModeDisplay() {
+    const modeBtn = document.getElementById('editModeBtn');
+    const modeText = document.getElementById('editModeText');
+    if (modeBtn) {
+        modeBtn.textContent = editMode === 'drag' ? '拖拉模式' : '輸入模式';
+        modeBtn.className = editMode === 'drag' ? 'btn-mode drag-mode' : 'btn-mode input-mode';
+    }
+    if (modeText) {
+        modeText.textContent = editMode === 'drag' ? '上下拖拉數據點調整' : '點擊數據點輸入數值';
+    }
 }
 
 // 同步到遊戲引擎
@@ -316,32 +427,24 @@ function syncToGameEngine() {
     if (typeof data !== 'undefined') {
         data.baseredraw = [...workingBaseredraw];
         data.freeredraw = [...workingFreeredraw];
-        console.log('✅ 重轉率已同步到遊戲引擎');
     }
 }
 
 // 重置為原始值
 function resetToOriginal() {
-    // 重新從 data 讀取原始值（需要保存原始備份）
     workingBaseredraw = [...originalBaseredraw];
     workingFreeredraw = [...originalFreeredraw];
     updateChartsWithWorkingData();
     console.log('🔄 已重置為原始重轉率');
 }
 
-// 原始值備份
-let originalBaseredraw = [];
-let originalFreeredraw = [];
-
 // 初始化圖表
 function initWeightCharts() {
-    // 備份原始值（只在第一次備份）
     if (originalBaseredraw.length === 0) {
         originalBaseredraw = [...(data.baseredraw || [])];
         originalFreeredraw = [...(data.freeredraw || [])];
     }
 
-    // 複製到工作副本
     workingBaseredraw = [...(data.baseredraw || [])];
     workingFreeredraw = [...(data.freeredraw || [])];
 
@@ -362,6 +465,7 @@ function initWeightCharts() {
     freeGameChart = createInteractiveChart('freeGameChart', freeLabels, freeredrawB, adjustedFree, workingFreeredraw, 'free');
 
     updateCycleDisplay(adjustedBase, adjustedFree);
+    updateModeDisplay();
 }
 
 // 顯示/關閉彈窗
@@ -390,4 +494,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const resetBtn = document.getElementById('resetRedrawBtn');
     if (resetBtn) resetBtn.addEventListener('click', resetToOriginal);
+
+    const modeBtn = document.getElementById('editModeBtn');
+    if (modeBtn) modeBtn.addEventListener('click', toggleEditMode);
+
+    const yAxisInput = document.getElementById('yAxisMaxInput');
+    if (yAxisInput) yAxisInput.addEventListener('change', updateYAxisScale);
 });

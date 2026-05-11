@@ -84,7 +84,13 @@
             </div>
             <div class="modal-body">
                 <div class="edit-instructions">
-                    <p>點擊圖表上的<span class="highlight">目標權重</span>數據點可直接調整，系統自動反推重轉率</p>
+                    <div class="edit-controls">
+                        <button id="editModeBtn" class="btn-mode drag-mode">拖拉模式</button>
+                        <span id="editModeText">上下拖拉數據點調整</span>
+                        <label>Y軸上限:</label>
+                        <input type="number" id="yAxisMaxInput" placeholder="自動" min="0.1" step="1" value="50">
+                        <span>%</span>
+                    </div>
                     <p>點擊圖例可切換顯示/隱藏各條線</p>
                 </div>
 

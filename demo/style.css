@@ -549,6 +549,64 @@ body.free-game-mode .stat-value {
     font-weight: bold;
 }
 
+.edit-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.edit-controls label {
+    color: #dfe6e9;
+    font-size: 0.9em;
+}
+
+.edit-controls span {
+    color: #dfe6e9;
+    font-size: 0.9em;
+}
+
+.edit-controls input {
+    padding: 5px 8px;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 4px;
+    background: rgba(0,0,0,0.3);
+    color: #fff;
+    width: 60px;
+    font-size: 0.9em;
+}
+
+.btn-mode {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.85em;
+    transition: all 0.3s;
+}
+
+.btn-mode.drag-mode {
+    background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+    color: white;
+}
+
+.btn-mode.input-mode {
+    background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+    color: white;
+}
+
+.btn-mode:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+}
+
+#editModeText {
+    color: #81ecec;
+    font-style: italic;
+}
+
 /* 週期調整區 */
 .cycle-adjust {
     margin-top: 15px;
