@@ -1,17 +1,16 @@
 /**
  * 倍率權重分析圖表
- * 顯示 BaseGame 和 FreeGame 經重轉後的倍率權重分佈
- * 支援互動式調整
+ * 直接調整目標權重，自動反推重轉率
  */
 
 let baseGameChart = null;
 let freeGameChart = null;
 
-// 工作副本（可修改）
+// 工作副本
 let workingBaseredraw = [];
 let workingFreeredraw = [];
 
-// 顯示範圍限制（到2000倍，約 index 46）
+// 顯示範圍限制（到2000倍）
 const DISPLAY_LIMIT = 47;
 
 // 計算重轉後的權重
@@ -35,17 +34,45 @@ function calculateAdjustedWeights(originalWeights, redrawRates) {
     return adjusted;
 }
 
+// 反推重轉率：根據目標權重計算需要的重轉率
+// 公式推導：A[i] = B[i]*(1-R[i]) / Total
+// => R[i] = 1 - (A[i] * S) / (B[i] * (1 - A[i]))
+// 其中 S = Σ(B[j]*(1-R[j])) for j ≠ i
+function calculateRedrawRateFromTarget(targetWeight, index, originalWeights, currentRedrawRates) {
+    const B_i = originalWeights[index];
+
+    if (B_i <= 0) return currentRedrawRates[index]; // 原始權重為0，無法調整
+    if (targetWeight <= 0) return 1; // 目標為0，重轉率100%
+    if (targetWeight >= 1) return 0; // 目標為100%，不可能
+
+    // 計算其他區間的 S = Σ(B[j]*(1-R[j])) for j ≠ index
+    let S = 0;
+    for (let j = 0; j < originalWeights.length; j++) {
+        if (j !== index) {
+            const R_j = j < currentRedrawRates.length ? currentRedrawRates[j] : 0;
+            S += originalWeights[j] * (1 - R_j);
+        }
+    }
+
+    // R[i] = 1 - (A[i] * S) / (B[i] * (1 - A[i]))
+    const numerator = targetWeight * S;
+    const denominator = B_i * (1 - targetWeight);
+
+    if (denominator <= 0) return 0;
+
+    const R_i = 1 - (numerator / denominator);
+
+    // 限制在 [0, 1] 範圍
+    return Math.max(0, Math.min(1, R_i));
+}
+
 // 生成 X 軸標籤
 function generateLabels(count, multipleRange, limit) {
     const labels = [];
     const displayCount = Math.min(count, limit);
     for (let i = 0; i < displayCount; i++) {
         if (multipleRange && i < multipleRange.length) {
-            if (i === 0) {
-                labels.push('0');
-            } else {
-                labels.push(`${multipleRange[i]}`);
-            }
+            labels.push(i === 0 ? '0' : `${multipleRange[i]}`);
         } else {
             labels.push(`${i}`);
         }
@@ -73,27 +100,29 @@ function createInteractiveChart(canvasId, labels, originalData, adjustedData, re
                     fill: false,
                     tension: 0.1,
                     pointRadius: 2,
-                    hidden: true  // 預設隱藏
+                    hidden: true
                 },
                 {
-                    label: '重轉後權重',
-                    data: displayAdjusted,
+                    label: '目標權重 (可調整)',
+                    data: [...displayAdjusted],
                     borderColor: 'rgba(54, 162, 235, 1)',
                     backgroundColor: 'rgba(54, 162, 235, 0.2)',
                     fill: false,
                     tension: 0.1,
-                    pointRadius: 3,
-                    pointHoverRadius: 8
+                    pointRadius: 5,
+                    pointHoverRadius: 10,
+                    pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
                 },
                 {
-                    label: '重轉率',
+                    label: '重轉率 (自動計算)',
                     data: displayRedraw,
                     borderColor: 'rgba(255, 206, 86, 1)',
                     backgroundColor: 'rgba(255, 206, 86, 0.2)',
                     fill: false,
                     tension: 0.1,
                     pointRadius: 3,
-                    pointHoverRadius: 8,
                     yAxisID: 'y1'
                 }
             ]
@@ -107,15 +136,7 @@ function createInteractiveChart(canvasId, labels, originalData, adjustedData, re
             },
             plugins: {
                 legend: {
-                    labels: { color: '#fff' },
-                    onClick: function(e, legendItem, legend) {
-                        // 預設行為：點擊切換顯示/隱藏
-                        const index = legendItem.datasetIndex;
-                        const ci = legend.chart;
-                        const meta = ci.getDatasetMeta(index);
-                        meta.hidden = meta.hidden === null ? !ci.data.datasets[index].hidden : null;
-                        ci.update();
-                    }
+                    labels: { color: '#fff' }
                 },
                 tooltip: {
                     callbacks: {
@@ -164,9 +185,9 @@ function createInteractiveChart(canvasId, labels, originalData, adjustedData, re
                     const datasetIndex = element.datasetIndex;
                     const index = element.index;
 
-                    // 只允許編輯重轉率（datasetIndex === 2）
-                    if (datasetIndex === 2) {
-                        showEditDialog(chartType, index, displayRedraw[index]);
+                    // 只允許編輯目標權重（datasetIndex === 1）
+                    if (datasetIndex === 1) {
+                        showTargetWeightEditDialog(chartType, index);
                     }
                 }
             }
@@ -176,25 +197,41 @@ function createInteractiveChart(canvasId, labels, originalData, adjustedData, re
     return chart;
 }
 
-// 顯示編輯對話框
-function showEditDialog(chartType, index, currentValue) {
+// 顯示目標權重編輯對話框
+function showTargetWeightEditDialog(chartType, index) {
     const multipleRange = data.multipleRange || [];
     const label = index < multipleRange.length ? multipleRange[index] : index;
 
-    const newValue = prompt(
-        `調整 ${chartType} 倍數 ${label} 的重轉率\n` +
-        `當前值: ${(currentValue * 100).toFixed(2)}%\n` +
-        `請輸入新的重轉率 (0-100):`
+    const originalWeights = chartType === 'base' ? data.baseredrawB : data.freeredrawB;
+    const redrawRates = chartType === 'base' ? workingBaseredraw : workingFreeredraw;
+    const adjustedWeights = calculateAdjustedWeights(originalWeights, redrawRates);
+
+    const currentValue = adjustedWeights[index] || 0;
+
+    const newValueStr = prompt(
+        `調整 ${chartType === 'base' ? 'BaseGame' : 'FreeGame'} 倍數 ${label} 的目標權重\n` +
+        `當前值: ${(currentValue * 100).toFixed(4)}%\n` +
+        `請輸入新的目標權重 (0-100):`
     );
 
-    if (newValue !== null && !isNaN(parseFloat(newValue))) {
-        const rate = Math.max(0, Math.min(100, parseFloat(newValue))) / 100;
+    if (newValueStr !== null && !isNaN(parseFloat(newValueStr))) {
+        const targetWeight = Math.max(0, Math.min(100, parseFloat(newValueStr))) / 100;
+
+        // 反推重轉率
+        const newRedrawRate = calculateRedrawRateFromTarget(
+            targetWeight,
+            index,
+            originalWeights,
+            redrawRates
+        );
 
         if (chartType === 'base') {
-            workingBaseredraw[index] = rate;
+            workingBaseredraw[index] = newRedrawRate;
         } else {
-            workingFreeredraw[index] = rate;
+            workingFreeredraw[index] = newRedrawRate;
         }
+
+        console.log(`✅ 倍數 ${label}: 目標權重 ${(targetWeight*100).toFixed(4)}% → 重轉率 ${(newRedrawRate*100).toFixed(2)}%`);
 
         updateChartsWithWorkingData();
     }
@@ -204,13 +241,10 @@ function showEditDialog(chartType, index, currentValue) {
 function updateChartsWithWorkingData() {
     const baseredrawB = data.baseredrawB || [];
     const freeredrawB = data.freeredrawB || [];
-    const multipleRange = data.multipleRange || [];
 
-    // 計算調整後的權重
     const adjustedBase = calculateAdjustedWeights(baseredrawB, workingBaseredraw);
     const adjustedFree = calculateAdjustedWeights(freeredrawB, workingFreeredraw);
 
-    // 更新圖表數據
     if (baseGameChart) {
         baseGameChart.data.datasets[1].data = adjustedBase.slice(0, DISPLAY_LIMIT);
         baseGameChart.data.datasets[2].data = workingBaseredraw.slice(0, DISPLAY_LIMIT);
@@ -223,10 +257,7 @@ function updateChartsWithWorkingData() {
         freeGameChart.update();
     }
 
-    // 更新週期顯示
     updateCycleDisplay(adjustedBase, adjustedFree);
-
-    // 同步到遊戲引擎
     syncToGameEngine();
 }
 
@@ -245,7 +276,7 @@ function updateCycleDisplay(adjustedBase, adjustedFree) {
         freeGameCycle === Infinity ? '∞' : freeGameCycle.toFixed(2);
 }
 
-// 根據目標週期反推重轉率
+// 根據目標週期調整
 function adjustByTargetCycle() {
     const targetCycleInput = document.getElementById('targetCycleInput');
     const targetCycle = parseFloat(targetCycleInput.value);
@@ -257,44 +288,27 @@ function adjustByTargetCycle() {
 
     const baseredrawB = data.baseredrawB || [];
     const lastIndex = baseredrawB.length - 1;
-    const originalProb = baseredrawB[lastIndex];
 
     // 目標觸發機率 = 1 / 目標週期
     const targetProb = 1 / targetCycle;
 
-    // 計算需要的重轉率
-    // adjustedProb = originalProb * (1 - redrawRate) / totalAdjusted
-    // 簡化假設：只調整最後一個區間的重轉率
-    // 需要反推 redrawRate[lastIndex]
+    // 使用反推公式計算所需的重轉率
+    const newRedrawRate = calculateRedrawRateFromTarget(
+        targetProb,
+        lastIndex,
+        baseredrawB,
+        workingBaseredraw
+    );
 
-    // 先計算其他區間的總調整權重
-    let otherTotal = 0;
-    for (let i = 0; i < lastIndex; i++) {
-        const redrawRate = workingBaseredraw[i] || 0;
-        otherTotal += baseredrawB[i] * (1 - redrawRate);
-    }
-
-    // targetProb = originalProb * (1 - newRate) / (otherTotal + originalProb * (1 - newRate))
-    // 解方程得: newRate = 1 - (targetProb * otherTotal) / (originalProb * (1 - targetProb))
-
-    if (targetProb >= 1) {
-        alert('目標週期過小，無法達成');
+    if (newRedrawRate < 0 || newRedrawRate > 1) {
+        alert(`無法達成目標週期 ${targetCycle}\n計算出的重轉率超出範圍`);
         return;
     }
 
-    const numerator = targetProb * otherTotal;
-    const denominator = originalProb * (1 - targetProb);
-    const newRate = 1 - (numerator / denominator);
-
-    if (newRate < 0 || newRate > 1) {
-        alert(`計算出的重轉率 ${(newRate * 100).toFixed(2)}% 超出範圍 [0, 100]%\n請調整目標週期`);
-        return;
-    }
-
-    workingBaseredraw[lastIndex] = newRate;
+    workingBaseredraw[lastIndex] = newRedrawRate;
     updateChartsWithWorkingData();
 
-    console.log(`✅ 已調整 index ${lastIndex} 的重轉率為 ${(newRate * 100).toFixed(2)}%`);
+    console.log(`✅ 目標週期 ${targetCycle} → 重轉率 ${(newRedrawRate * 100).toFixed(2)}%`);
 }
 
 // 同步到遊戲引擎
@@ -308,15 +322,26 @@ function syncToGameEngine() {
 
 // 重置為原始值
 function resetToOriginal() {
-    workingBaseredraw = [...(data.baseredraw || [])];
-    workingFreeredraw = [...(data.freeredraw || [])];
+    // 重新從 data 讀取原始值（需要保存原始備份）
+    workingBaseredraw = [...originalBaseredraw];
+    workingFreeredraw = [...originalFreeredraw];
     updateChartsWithWorkingData();
     console.log('🔄 已重置為原始重轉率');
 }
 
+// 原始值備份
+let originalBaseredraw = [];
+let originalFreeredraw = [];
+
 // 初始化圖表
 function initWeightCharts() {
-    // 複製原始數據到工作副本
+    // 備份原始值（只在第一次備份）
+    if (originalBaseredraw.length === 0) {
+        originalBaseredraw = [...(data.baseredraw || [])];
+        originalFreeredraw = [...(data.freeredraw || [])];
+    }
+
+    // 複製到工作副本
     workingBaseredraw = [...(data.baseredraw || [])];
     workingFreeredraw = [...(data.freeredraw || [])];
 
@@ -324,33 +349,27 @@ function initWeightCharts() {
     const freeredrawB = data.freeredrawB || [];
     const multipleRange = data.multipleRange || [];
 
-    // 計算調整後的權重
     const adjustedBase = calculateAdjustedWeights(baseredrawB, workingBaseredraw);
     const adjustedFree = calculateAdjustedWeights(freeredrawB, workingFreeredraw);
 
-    // 生成標籤
     const baseLabels = generateLabels(baseredrawB.length, multipleRange, DISPLAY_LIMIT);
     const freeLabels = generateLabels(freeredrawB.length, multipleRange, DISPLAY_LIMIT);
 
-    // 銷毀舊圖表
     if (baseGameChart) baseGameChart.destroy();
     if (freeGameChart) freeGameChart.destroy();
 
-    // 創建新圖表
     baseGameChart = createInteractiveChart('baseGameChart', baseLabels, baseredrawB, adjustedBase, workingBaseredraw, 'base');
     freeGameChart = createInteractiveChart('freeGameChart', freeLabels, freeredrawB, adjustedFree, workingFreeredraw, 'free');
 
-    // 更新週期顯示
     updateCycleDisplay(adjustedBase, adjustedFree);
 }
 
-// 顯示彈窗
+// 顯示/關閉彈窗
 function showWeightModal() {
     document.getElementById('weightModal').style.display = 'flex';
     initWeightCharts();
 }
 
-// 關閉彈窗
 function hideWeightModal() {
     document.getElementById('weightModal').style.display = 'none';
 }
@@ -366,15 +385,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.key === 'Escape') hideWeightModal();
     });
 
-    // 週期調整按鈕
     const adjustBtn = document.getElementById('adjustCycleBtn');
-    if (adjustBtn) {
-        adjustBtn.addEventListener('click', adjustByTargetCycle);
-    }
+    if (adjustBtn) adjustBtn.addEventListener('click', adjustByTargetCycle);
 
-    // 重置按鈕
     const resetBtn = document.getElementById('resetRedrawBtn');
-    if (resetBtn) {
-        resetBtn.addEventListener('click', resetToOriginal);
-    }
+    if (resetBtn) resetBtn.addEventListener('click', resetToOriginal);
 });
