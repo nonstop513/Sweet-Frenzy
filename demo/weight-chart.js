@@ -363,7 +363,7 @@ function createInteractiveChart(canvasId, labels, originalData, targetData, redr
                     title: { display: true, text: '權重機率', color: '#fff' },
                     ticks: { color: '#aaa', callback: (v) => (v * 100).toFixed(1) + '%' },
                     grid: { color: 'rgba(255,255,255,0.1)' },
-                    min: 0,
+                    min: -0.001,  // 稍微低於0，避免數據點被切到
                     max: yMax
                 },
                 y1: {
@@ -441,23 +441,24 @@ function updateCycleDisplay() {
     const triggerProb = targetBaseWeights[TRIGGER_INDEX] || 0;
     const cycle = triggerProb > 0 ? (1 / triggerProb) : Infinity;
 
+    // 更新週期輸入框
+    const cycleInput = document.getElementById('targetCycleInput');
+    if (cycleInput && !cycleInput.matches(':focus')) {
+        cycleInput.value = Math.round(cycle);
+    }
+
     document.getElementById('originalTriggerProb').textContent =
         ((data.baseredrawB?.[TRIGGER_INDEX] || 0) * 100).toFixed(4) + '%';
     document.getElementById('adjustedTriggerProb').textContent =
         (triggerProb * 100).toFixed(4) + '%';
-    document.getElementById('freeGameCycle').textContent =
-        cycle === Infinity ? '∞' : cycle.toFixed(2);
 }
 
-// 設定目標週期
-function setTargetCycle() {
+// 週期輸入變化時即時更新
+function onCycleInputChange() {
     const input = document.getElementById('targetCycleInput');
     const newCycle = parseFloat(input.value);
 
-    if (isNaN(newCycle) || newCycle <= 0) {
-        alert('請輸入有效的週期（正數）');
-        return;
-    }
+    if (isNaN(newCycle) || newCycle <= 0) return;
 
     fixedCycle = newCycle;
     const triggerProb = 1 / fixedCycle;
@@ -479,7 +480,12 @@ function setTargetCycle() {
     }
 
     updateChartsFromTargetWeights();
-    console.log(`✅ 週期設為 ${fixedCycle}，觸發機率 ${(triggerProb * 100).toFixed(4)}%`);
+}
+
+// 設定目標週期（保留給按鈕用，現在改為即時更新）
+function setTargetCycle() {
+    onCycleInputChange();
+    console.log(`✅ 週期設為 ${fixedCycle}，觸發機率 ${(1/fixedCycle * 100).toFixed(4)}%`);
 }
 
 // 更新Y軸範圍
@@ -574,6 +580,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const adjustBtn = document.getElementById('adjustCycleBtn');
     if (adjustBtn) adjustBtn.addEventListener('click', setTargetCycle);
+
+    // 週期輸入即時更新
+    const cycleInput = document.getElementById('targetCycleInput');
+    if (cycleInput) {
+        cycleInput.addEventListener('input', onCycleInputChange);
+        cycleInput.addEventListener('change', onCycleInputChange);
+    }
 
     const resetBtn = document.getElementById('resetRedrawBtn');
     if (resetBtn) resetBtn.addEventListener('click', resetToOriginal);
