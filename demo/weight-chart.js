@@ -305,7 +305,8 @@ function createInteractiveChart(canvasId, labels, originalData, targetData, redr
                     fill: false,
                     tension: 0.1,
                     pointRadius: 2,
-                    hidden: true
+                    hidden: true,
+                    clip: false
                 },
                 {
                     label: '目標權重 (可調整)',
@@ -318,7 +319,8 @@ function createInteractiveChart(canvasId, labels, originalData, targetData, redr
                     pointHoverRadius: 10,
                     pointBackgroundColor: 'rgba(54, 162, 235, 1)',
                     pointBorderColor: '#fff',
-                    pointBorderWidth: 2
+                    pointBorderWidth: 2,
+                    clip: false
                 },
                 {
                     label: '重轉率',
@@ -329,13 +331,22 @@ function createInteractiveChart(canvasId, labels, originalData, targetData, redr
                     tension: 0.1,
                     pointRadius: 3,
                     yAxisID: 'y1',
-                    hidden: true
+                    hidden: true,
+                    clip: false
                 }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            layout: {
+                padding: {
+                    top: 15,
+                    bottom: 15,
+                    left: 10,
+                    right: 10
+                }
+            },
             interaction: { mode: 'index', intersect: false },
             plugins: {
                 legend: { labels: { color: '#fff' } },
@@ -363,8 +374,9 @@ function createInteractiveChart(canvasId, labels, originalData, targetData, redr
                     title: { display: true, text: '權重機率', color: '#fff' },
                     ticks: { color: '#aaa', callback: (v) => (v * 100).toFixed(1) + '%' },
                     grid: { color: 'rgba(255,255,255,0.1)' },
-                    min: -0.001,  // 稍微低於0，避免數據點被切到
-                    max: yMax
+                    min: 0,
+                    max: yMax,
+                    grace: '5%'  // 上下留白，避免數據點被切到
                 },
                 y1: {
                     type: 'linear',
