@@ -473,13 +473,11 @@ function updateMultiplierDisplay() {
     const basemultiple = data.basemultiple || [];
     const freemultiple = data.freemultiple || [];
 
-    // 計算 BaseGame 平均倍數 (不含觸發區間)
+    // 計算 BaseGame 平均倍數
     let baseAvgMult = 0;
-    let baseWeightSum = 0;
     for (let i = 0; i < targetBaseWeights.length; i++) {
         if (i < basemultiple.length) {
             baseAvgMult += targetBaseWeights[i] * basemultiple[i];
-            baseWeightSum += targetBaseWeights[i];
         }
     }
 
@@ -491,27 +489,18 @@ function updateMultiplierDisplay() {
         }
     }
 
-    // FreeGame 觸發機率
+    // FreeGame 觸發機率和週期
     const triggerProb = targetBaseWeights[TRIGGER_INDEX] || 0;
-    const cycle = triggerProb > 0 ? (1 / triggerProb) : 0;
+    const cycle = triggerProb > 0 ? (1 / triggerProb) : Infinity;
 
-    // BaseGame RTP = BaseGame平均倍數 (已包含 FreeGame 貢獻在權重分配中)
-    // 簡化計算：直接顯示平均倍數作為RTP
+    // BaseGame RTP = BaseGame平均倍數
     const baseRTP = baseAvgMult * 100;
 
-    // FreeGame RTP = FreeGame平均倍數
-    const freeRTP = freeAvgMult * 100;
+    // FreeGame RTP = FreeGame平均倍數 / 週期
+    const freeRTP = cycle > 0 && cycle !== Infinity ? (freeAvgMult / cycle) * 100 : 0;
 
-    // 總 RTP = BaseGame直接分數 + FreeGame貢獻
-    // BaseGame 不觸發時的平均倍數
-    let baseDirectMult = 0;
-    for (let i = 0; i < TRIGGER_INDEX; i++) {
-        if (i < basemultiple.length && i < targetBaseWeights.length) {
-            baseDirectMult += targetBaseWeights[i] * basemultiple[i];
-        }
-    }
-    // 總 RTP = 直接分數 + 觸發機率 * FreeGame平均倍數
-    const totalRTP = (baseDirectMult + triggerProb * freeAvgMult) * 100;
+    // 總 RTP = BaseGame RTP + FreeGame RTP
+    const totalRTP = baseRTP + freeRTP;
 
     // 更新顯示
     const baseTitle = document.getElementById('baseGameTitle');
@@ -521,7 +510,7 @@ function updateMultiplierDisplay() {
 
     const freeTitle = document.getElementById('freeGameTitle');
     if (freeTitle) {
-        freeTitle.innerHTML = `FreeGame 倍率權重 <span class="stats-inline">平均倍數: ${freeAvgMult.toFixed(2)}x | RTP: ${freeRTP.toFixed(2)}%</span>`;
+        freeTitle.innerHTML = `FreeGame 倍率權重 <span class="stats-inline">平均倍數: ${freeAvgMult.toFixed(2)}x | RTP: ${freeRTP.toFixed(2)}% (÷${Math.round(cycle)})</span>`;
     }
 
     // 更新總 RTP
