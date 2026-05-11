@@ -463,6 +463,72 @@ function updateCycleDisplay() {
         ((data.baseredrawB?.[TRIGGER_INDEX] || 0) * 100).toFixed(4) + '%';
     document.getElementById('adjustedTriggerProb').textContent =
         (triggerProb * 100).toFixed(4) + '%';
+
+    // 更新平均倍數和RTP
+    updateMultiplierDisplay();
+}
+
+// 計算並更新平均倍數和RTP顯示
+function updateMultiplierDisplay() {
+    const basemultiple = data.basemultiple || [];
+    const freemultiple = data.freemultiple || [];
+
+    // 計算 BaseGame 平均倍數 (不含觸發區間)
+    let baseAvgMult = 0;
+    let baseWeightSum = 0;
+    for (let i = 0; i < targetBaseWeights.length; i++) {
+        if (i < basemultiple.length) {
+            baseAvgMult += targetBaseWeights[i] * basemultiple[i];
+            baseWeightSum += targetBaseWeights[i];
+        }
+    }
+
+    // 計算 FreeGame 平均倍數
+    let freeAvgMult = 0;
+    for (let i = 0; i < targetFreeWeights.length; i++) {
+        if (i < freemultiple.length) {
+            freeAvgMult += targetFreeWeights[i] * freemultiple[i];
+        }
+    }
+
+    // FreeGame 觸發機率
+    const triggerProb = targetBaseWeights[TRIGGER_INDEX] || 0;
+    const cycle = triggerProb > 0 ? (1 / triggerProb) : 0;
+
+    // BaseGame RTP = BaseGame平均倍數 (已包含 FreeGame 貢獻在權重分配中)
+    // 簡化計算：直接顯示平均倍數作為RTP
+    const baseRTP = baseAvgMult * 100;
+
+    // FreeGame RTP = FreeGame平均倍數
+    const freeRTP = freeAvgMult * 100;
+
+    // 總 RTP = BaseGame直接分數 + FreeGame貢獻
+    // BaseGame 不觸發時的平均倍數
+    let baseDirectMult = 0;
+    for (let i = 0; i < TRIGGER_INDEX; i++) {
+        if (i < basemultiple.length && i < targetBaseWeights.length) {
+            baseDirectMult += targetBaseWeights[i] * basemultiple[i];
+        }
+    }
+    // 總 RTP = 直接分數 + 觸發機率 * FreeGame平均倍數
+    const totalRTP = (baseDirectMult + triggerProb * freeAvgMult) * 100;
+
+    // 更新顯示
+    const baseTitle = document.getElementById('baseGameTitle');
+    if (baseTitle) {
+        baseTitle.innerHTML = `BaseGame 倍率權重 <span class="stats-inline">平均倍數: ${baseAvgMult.toFixed(2)}x | RTP: ${baseRTP.toFixed(2)}%</span>`;
+    }
+
+    const freeTitle = document.getElementById('freeGameTitle');
+    if (freeTitle) {
+        freeTitle.innerHTML = `FreeGame 倍率權重 <span class="stats-inline">平均倍數: ${freeAvgMult.toFixed(2)}x | RTP: ${freeRTP.toFixed(2)}%</span>`;
+    }
+
+    // 更新總 RTP
+    const totalRTPEl = document.getElementById('totalRTP');
+    if (totalRTPEl) {
+        totalRTPEl.textContent = totalRTP.toFixed(2) + '%';
+    }
 }
 
 // 週期輸入變化時即時更新
@@ -583,12 +649,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('weightChartBtn').addEventListener('click', showWeightModal);
     document.getElementById('closeModal').addEventListener('click', hideWeightModal);
-    document.getElementById('weightModal').addEventListener('click', function(e) {
-        if (e.target === this) hideWeightModal();
-    });
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') hideWeightModal();
-    });
+    // 移除點擊背景關閉，只能點叉叉關閉
 
     const adjustBtn = document.getElementById('adjustCycleBtn');
     if (adjustBtn) adjustBtn.addEventListener('click', setTargetCycle);

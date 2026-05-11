@@ -500,6 +500,20 @@ body.free-game-mode .stat-value {
     margin-top: 0;
     margin-bottom: 15px;
     font-size: 1.1em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.stats-inline {
+    font-size: 0.85em;
+    font-weight: normal;
+    color: #ffd700;
+    background: rgba(255, 215, 0, 0.1);
+    padding: 4px 10px;
+    border-radius: 4px;
 }
 
 .chart-container canvas {
