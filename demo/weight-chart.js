@@ -222,16 +222,14 @@ function updateChartsFromTargetWeights() {
     updateCycleDisplay();
 }
 
-// 初始化目標權重（從原始權重和重轉率計算）
+// 初始化目標權重（直接使用原始權重作為目標，表示不調整）
 function initTargetWeights() {
     const baseredrawB = data.baseredrawB || [];
     const freeredrawB = data.freeredrawB || [];
-    const baseredraw = data.baseredraw || [];
-    const freeredraw = data.freeredraw || [];
 
-    // 計算調整後的權重作為初始目標
-    targetBaseWeights = calculateAdjustedWeights(baseredrawB, baseredraw);
-    targetFreeWeights = calculateAdjustedWeights(freeredrawB, freeredraw);
+    // 直接用原始權重作為目標（重轉率全為 0）
+    targetBaseWeights = [...baseredrawB];
+    targetFreeWeights = [...freeredrawB];
 
     // 讀取當前週期
     const triggerProb = targetBaseWeights[TRIGGER_INDEX] || 0.005;
@@ -240,6 +238,20 @@ function initTargetWeights() {
     // 更新週期輸入框
     const cycleInput = document.getElementById('targetCycleInput');
     if (cycleInput) cycleInput.value = fixedCycle;
+}
+
+// 同步重轉率到遊戲引擎（頁面載入時調用）
+function syncRedrawRatesToEngine() {
+    const baseredrawB = data.baseredrawB || [];
+    const freeredrawB = data.freeredrawB || [];
+
+    const baseRedrawRates = calculateRedrawRates(baseredrawB, targetBaseWeights);
+    const freeRedrawRates = calculateRedrawRates(freeredrawB, targetFreeWeights);
+
+    data.baseredraw = baseRedrawRates;
+    data.freeredraw = freeRedrawRates;
+
+    console.log('✅ 重轉率已同步到引擎');
 }
 
 // 計算調整後的權重
@@ -609,6 +621,10 @@ function initWeightCharts() {
     const baseRedrawRates = calculateRedrawRates(baseredrawB, targetBaseWeights);
     const freeRedrawRates = calculateRedrawRates(freeredrawB, targetFreeWeights);
 
+    // 同步到遊戲引擎
+    data.baseredraw = baseRedrawRates;
+    data.freeredraw = freeRedrawRates;
+
     if (baseGameChart) baseGameChart.destroy();
     if (freeGameChart) freeGameChart.destroy();
 
@@ -635,6 +651,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // 備份原始值
     originalBaseredraw = [...(data.baseredraw || [])];
     originalFreeredraw = [...(data.freeredraw || [])];
+
+    // 初始化目標權重並同步重轉率到引擎
+    initTargetWeights();
+    syncRedrawRatesToEngine();
 
     document.getElementById('weightChartBtn').addEventListener('click', showWeightModal);
     document.getElementById('closeModal').addEventListener('click', hideWeightModal);

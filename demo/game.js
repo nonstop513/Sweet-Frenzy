@@ -869,7 +869,10 @@ async function onBuyFeature() {
     }
     
     gameState.isAnimating = true;
-    
+
+    // ✅ 重置本次得分
+    gameState.totalScore = 0;
+
     // ✅ 扣附10000金額
     gameState.balance -= 10000;
     gameState.totalBet += 10000;
