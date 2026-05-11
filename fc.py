@@ -169,7 +169,10 @@ sht7 = wb.sheets['工作表1']
 output.update(extract_range(sht7, 'B1:B59', 'baseredraw'))
 output.update(extract_range(sht7, 'C1:C58', 'freeredraw'))
 output.update(extract_range(sht7, 'A1:A57', 'multipleRange'))
-
+output.update(extract_range(sht7, 'E1:E59', 'baseredrawB'))
+output.update(extract_range(sht7, 'F1:F58', 'freeredrawB'))
+output.update(extract_range(sht7, 'P1:P58', 'basemultiple'))
+output.update(extract_range(sht7, 'Q1:Q58', 'freemultiple'))
 
 wb.close()
 app.quit()

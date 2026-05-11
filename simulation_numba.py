@@ -1590,28 +1590,67 @@ bounds = np.array([
     15000, 20000, 25000
 ])
 
+# =====================
+# a 的區間統計
+# =====================
+
 x = a[0] / 100
 
 # 只統計 a[1] < 3 的資料進倍數區間
 mask = a[1] < 3
 
-# idx 會是 0 ~ 57，剛好對應 58 個區間
+# idx 會是 0 ~ 57，對應 58 個區間
 idx = np.searchsorted(bounds, x[mask], side='left')
 
 # 統計 58 個倍數區間的數量
 count_58 = np.bincount(idx, minlength=len(bounds) + 1)
 
+# 每個區間的總倍數
+sum_58 = np.bincount(
+    idx,
+    weights=x[mask],
+    minlength=len(bounds) + 1
+)
+
+# 每個區間的平均倍數，長度 58
+a_avg_58 = np.divide(
+    sum_58,
+    count_58,
+    out=np.zeros_like(sum_58, dtype=float),
+    where=count_58 != 0
+)
+
 # 第 59 個數字：a[1] >= 3 的數量
 count_special = np.sum(a[1] >= 3)
 
-# 合併成長度 59 的向量
+# 合併成長度 59 的數量向量
 result = np.append(count_58, count_special)
+
+
+# =====================
+# b 的區間統計
+# =====================
 
 x_b = b[0] / 100
 
-# idx 會是 0 ~ 57，對應 58 個區間
+# idx_b 會是 0 ~ 57，對應 58 個區間
 idx_b = np.searchsorted(bounds, x_b, side='left')
 
-# 回傳長度 58 的數量向量
+# 統計 58 個倍數區間的數量
 b_count_58 = np.bincount(idx_b, minlength=len(bounds) + 1)
+
+# 每個區間的總倍數
+b_sum_58 = np.bincount(
+    idx_b,
+    weights=x_b,
+    minlength=len(bounds) + 1
+)
+
+# 每個區間的平均倍數，長度 58
+b_avg_58 = np.divide(
+    b_sum_58,
+    b_count_58,
+    out=np.zeros_like(b_sum_58, dtype=float),
+    where=b_count_58 != 0
+)
 # %%
