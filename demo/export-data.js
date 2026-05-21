@@ -17,8 +17,8 @@ function generateRawExportText() {
     const entries = Object.entries(data)
         .filter(([key]) => !EXCLUDE_KEYS.has(key));
 
-    const lines = [];
-    lines.push('{');
+    const parts = ['{'];
+    let currentLine = 1; // '{' 佔第 0 行，現在從第 1 行開始
 
     entries.forEach(([key, val], i) => {
         const isLast = i === entries.length - 1;
@@ -29,15 +29,20 @@ function generateRawExportText() {
                 return `[ ${flat} ]`;
             });
 
-        // 記錄此 key 開始的行號
-        keyLineMap[key] = lines.length;
-
         const indented = json.split('\n').map((l, li) => li === 0 ? l : '  ' + l).join('\n');
-        lines.push(`  "${key}": ${indented}${isLast ? '' : ','}`);
+        const block = `  "${key}": ${indented}${isLast ? '' : ','}`;
+
+        // 記錄此 key 在最終文字中的實際行號
+        keyLineMap[key] = currentLine;
+
+        parts.push(block);
+
+        // 計算這個 block 佔了幾行
+        currentLine += (block.match(/\n/g) || []).length + 1;
     });
 
-    lines.push('}');
-    return lines.join('\n');
+    parts.push('}');
+    return parts.join('\n');
 }
 
 function populateJumpSelect(keys) {
