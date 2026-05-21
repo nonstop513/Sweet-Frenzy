@@ -220,6 +220,12 @@ function updateChartsFromTargetWeights() {
     data.freeredraw = freeRedrawRates;
 
     updateCycleDisplay();
+
+    // 若匯出面板已展開，刷新內容
+    const exportContent = document.getElementById('exportContent');
+    if (exportContent && exportContent.style.display !== 'none') {
+        refreshExportText();
+    }
 }
 
 // 初始化目標權重（從原始權重和重轉率計算）
@@ -640,6 +646,45 @@ function hideWeightModal() {
     document.getElementById('weightModal').style.display = 'none';
 }
 
+// ==================== 匯出功能 ====================
+
+function formatArray(arr, label, multipleRange) {
+    if (!arr || arr.length === 0) return `  // ${label}: (無資料)`;
+    const lines = arr.map((val, i) => {
+        let rangeLabel = '';
+        if (multipleRange && multipleRange.length > 0) {
+            if (i === 0) rangeLabel = `0x`;
+            else if (i <= multipleRange.length) rangeLabel = `${multipleRange[i - 1]}x ~ ${multipleRange[i] !== undefined ? multipleRange[i] + 'x' : '∞'}`;
+        }
+        const comment = rangeLabel ? ` // [${i}] ${rangeLabel}` : ` // [${i}]`;
+        const valStr = typeof val === 'number' ? val.toPrecision(7).replace(/\.?0+$/, '') : String(val);
+        return `    ${valStr},${comment}`;
+    });
+    return `  "${label}": [\n${lines.join('\n')}\n  ]`;
+}
+
+function generateExportText(mode) {
+    const multipleRange = data.multipleRange || [];
+    const exportKeys = mode === 'all'
+        ? ['baseredraw', 'freeredraw', 'multipleRange', 'baseredrawB', 'freeredrawB', 'basemultiple', 'freemultiple']
+        : ['baseredraw', 'freeredraw'];
+
+    const parts = exportKeys.map(key => {
+        const arr = data[key] || [];
+        const needsLabels = ['baseredraw', 'freeredraw', 'baseredrawB', 'freeredrawB', 'basemultiple', 'freemultiple'].includes(key);
+        return formatArray(arr, key, needsLabels ? multipleRange : null);
+    });
+
+    return `{\n${parts.join(',\n\n')}\n}`;
+}
+
+function refreshExportText() {
+    const target = document.getElementById('exportTarget');
+    const textarea = document.getElementById('exportText');
+    if (!target || !textarea) return;
+    textarea.value = generateExportText(target.value);
+}
+
 // 綁定事件
 document.addEventListener('DOMContentLoaded', function() {
     // 備份原始值
@@ -672,4 +717,40 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const yAxisInput = document.getElementById('yAxisMaxInput');
     if (yAxisInput) yAxisInput.addEventListener('change', updateYAxisScale);
+
+    // 匯出區塊
+    const exportToggle = document.getElementById('exportToggle');
+    if (exportToggle) {
+        exportToggle.addEventListener('click', function() {
+            const content = document.getElementById('exportContent');
+            const icon = exportToggle.querySelector('.export-toggle-icon');
+            const isOpen = content.style.display !== 'none';
+            content.style.display = isOpen ? 'none' : 'block';
+            icon.classList.toggle('open', !isOpen);
+            if (!isOpen) refreshExportText();
+        });
+    }
+
+    const exportTarget = document.getElementById('exportTarget');
+    if (exportTarget) exportTarget.addEventListener('change', refreshExportText);
+
+    const copyBtn = document.getElementById('copyExportBtn');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', function() {
+            const textarea = document.getElementById('exportText');
+            if (!textarea) return;
+            textarea.select();
+            navigator.clipboard.writeText(textarea.value).then(() => {
+                copyBtn.classList.add('copied');
+                copyBtn.textContent = '✓ 已複製';
+                const feedback = document.getElementById('copyFeedback');
+                if (feedback) feedback.textContent = `${textarea.value.length} 字元`;
+                setTimeout(() => {
+                    copyBtn.classList.remove('copied');
+                    copyBtn.textContent = '複製全部';
+                    if (feedback) feedback.textContent = '';
+                }, 2000);
+            });
+        });
+    }
 });

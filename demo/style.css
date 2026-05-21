@@ -795,6 +795,111 @@ body.free-game-mode .stat-value {
     }
 }
 
+/* 匯出設定區塊 */
+.export-section {
+    margin-top: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.export-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background: rgba(116, 185, 255, 0.1);
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+}
+
+.export-header:hover {
+    background: rgba(116, 185, 255, 0.2);
+}
+
+.export-header h3 {
+    margin: 0;
+    color: #74b9ff;
+    font-size: 1em;
+}
+
+.export-toggle-icon {
+    color: #74b9ff;
+    font-size: 0.85em;
+    transition: transform 0.2s;
+}
+
+.export-toggle-icon.open {
+    transform: rotate(180deg);
+}
+
+.export-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 15px 8px;
+    flex-wrap: wrap;
+}
+
+.export-controls select {
+    flex: 1;
+    min-width: 200px;
+    padding: 7px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.4);
+    color: #fff;
+    font-size: 0.9em;
+}
+
+.btn-copy {
+    padding: 7px 16px;
+    background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9em;
+    white-space: nowrap;
+    transition: all 0.2s;
+    width: auto;
+}
+
+.btn-copy:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.btn-copy.copied {
+    background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+}
+
+.copy-feedback {
+    font-size: 0.85em;
+    color: #00ff88;
+    font-style: italic;
+}
+
+.export-textarea {
+    width: 100%;
+    min-height: 220px;
+    max-height: 380px;
+    padding: 12px 15px;
+    background: rgba(0, 0, 0, 0.5);
+    color: #a8e6cf;
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-family: 'Courier New', monospace;
+    font-size: 0.82em;
+    line-height: 1.5;
+    resize: vertical;
+    outline: none;
+    box-sizing: border-box;
+    display: block;
+}
+
 /* 橫向手機 */
 @media (max-height: 500px) and (orientation: landscape) {
     .modal-content {

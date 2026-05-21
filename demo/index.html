@@ -118,6 +118,25 @@
                     </div>
                     <p class="note">※ 修改週期即時生效，調整其他權重時週期固定不變</p>
                 </div>
+
+                <!-- 匯出設定 -->
+                <div class="export-section">
+                    <div class="export-header" id="exportToggle">
+                        <h3>📋 匯出設定參數</h3>
+                        <span class="export-toggle-icon">▼</span>
+                    </div>
+                    <div id="exportContent" style="display:none;">
+                        <div class="export-controls">
+                            <select id="exportTarget">
+                                <option value="redraw">重轉率 (baseredraw / freeredraw)</option>
+                                <option value="all">全部設定參數</option>
+                            </select>
+                            <button id="copyExportBtn" class="btn-copy">複製全部</button>
+                            <span id="copyFeedback" class="copy-feedback"></span>
+                        </div>
+                        <textarea id="exportText" class="export-textarea" readonly spellcheck="false"></textarea>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
