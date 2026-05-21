@@ -829,13 +829,14 @@ body.free-game-mode .stat-value {
 
 .export-controls select {
     flex: 1;
-    min-width: 200px;
+    min-width: 180px;
     padding: 7px 10px;
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 6px;
     background: rgba(0, 0, 0, 0.4);
     color: #fff;
     font-size: 0.9em;
+    cursor: pointer;
 }
 
 .btn-copy {
