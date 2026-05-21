@@ -59,34 +59,44 @@ function populateJumpSelect(keys) {
 
 function scrollTextareaToKey(key) {
     const textarea = document.getElementById('exportText');
-    if (!textarea || !(key in keyLineMap)) return;
+    if (!textarea) return;
 
-    const lineNum = keyLineMap[key];
     const text = textarea.value;
-    const lines = text.split('\n');
+    const searchStr = `  "${key}":`;
+    const charPos = text.indexOf(searchStr);
+    if (charPos === -1) return;
 
-    // 計算目標行的字元偏移量
-    let charOffset = 0;
-    for (let i = 0; i < lineNum && i < lines.length; i++) {
-        charOffset += lines[i].length + 1; // +1 for \n
-    }
-
-    // 用隱藏的 clone 量測行高並計算 scrollTop
-    const lineHeight = getTextareaLineHeight(textarea);
-    textarea.scrollTop = Math.max(0, (lineNum - 2) * lineHeight);
-
-    // 同時把游標移到該行讓使用者看到 highlight
+    // 選取該行文字
+    const lineEnd = text.indexOf('\n', charPos);
+    const selEnd = lineEnd === -1 ? text.length : lineEnd;
     textarea.focus();
-    textarea.setSelectionRange(charOffset, charOffset + (lines[lineNum] ? lines[lineNum].length : 0));
-}
+    textarea.setSelectionRange(charPos, selEnd);
 
-function getTextareaLineHeight(textarea) {
-    // 從計算樣式取得行高
+    // 用 mirror div 精確計算 scrollTop
+    const mirror = document.createElement('div');
     const style = window.getComputedStyle(textarea);
-    const lh = parseFloat(style.lineHeight);
-    if (!isNaN(lh)) return lh;
-    // fallback: fontSize * 1.5
-    return parseFloat(style.fontSize) * 1.5;
+    ['fontFamily', 'fontSize', 'fontWeight', 'lineHeight',
+     'letterSpacing', 'wordSpacing', 'paddingTop', 'paddingLeft',
+     'paddingRight', 'borderTopWidth', 'borderLeftWidth', 'whiteSpace',
+     'wordWrap', 'wordBreak', 'width', 'boxSizing'].forEach(prop => {
+        mirror.style[prop] = style[prop];
+    });
+    mirror.style.position = 'absolute';
+    mirror.style.visibility = 'hidden';
+    mirror.style.overflow = 'hidden';
+    mirror.style.height = 'auto';
+    mirror.style.whiteSpace = 'pre-wrap';
+    mirror.style.wordBreak = 'break-all';
+
+    // 放入目標位置之前的文字，量測高度
+    mirror.textContent = text.substring(0, charPos);
+    document.body.appendChild(mirror);
+    const targetTop = mirror.scrollHeight;
+    document.body.removeChild(mirror);
+
+    // 置中顯示（向上偏移半個視窗高度）
+    const viewHeight = textarea.clientHeight;
+    textarea.scrollTop = Math.max(0, targetTop - viewHeight / 3);
 }
 
 function showExportModal() {
