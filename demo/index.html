@@ -55,6 +55,7 @@
                 <button id="buyFeatureBtn" class="btn-buy-feature">Buy Feature (-10000)</button>
                 <button id="speedToggleBtn" class="btn-speed-toggle">动画速度: 1x</button>
                 <button id="weightChartBtn" class="btn-weight-chart">倍率權重調整</button>
+                <button id="exportDataBtn" class="btn-export-data">📋 匯出原始參數</button>
 
                 <!-- 統計信息 -->
                 <div class="stats-panel">
@@ -119,24 +120,24 @@
                     <p class="note">※ 修改週期即時生效，調整其他權重時週期固定不變</p>
                 </div>
 
-                <!-- 匯出設定 -->
-                <div class="export-section">
-                    <div class="export-header" id="exportToggle">
-                        <h3>📋 匯出設定參數</h3>
-                        <span class="export-toggle-icon">▼</span>
-                    </div>
-                    <div id="exportContent" style="display:none;">
-                        <div class="export-controls">
-                            <select id="exportTarget">
-                                <option value="redraw">重轉率 (baseredraw / freeredraw)</option>
-                                <option value="all">全部設定參數</option>
-                            </select>
-                            <button id="copyExportBtn" class="btn-copy">複製全部</button>
-                            <span id="copyFeedback" class="copy-feedback"></span>
-                        </div>
-                        <textarea id="exportText" class="export-textarea" readonly spellcheck="false"></textarea>
-                    </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 匯出原始參數彈窗 -->
+    <div id="exportModal" class="modal" style="display: none;">
+        <div class="modal-content export-modal-content">
+            <div class="modal-header">
+                <h2>📋 匯出原始參數</h2>
+                <span class="modal-close" id="closeExportModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="export-controls">
+                    <span class="export-info">包含 linkpoint、ReelWeight、DropWeight、Eliminate、FreeReelWeight、FreeDropWeight、FreeEliminate</span>
+                    <button id="copyExportBtn" class="btn-copy">複製全部</button>
+                    <span id="copyFeedback" class="copy-feedback"></span>
                 </div>
+                <textarea id="exportText" class="export-textarea" readonly spellcheck="false"></textarea>
             </div>
         </div>
     </div>
@@ -145,5 +146,6 @@
     <script src="engine.js"></script>
     <script src="game.js"></script>
     <script src="weight-chart.js"></script>
+    <script src="export-data.js"></script>
 </body>
 </html>
